@@ -149,10 +149,7 @@ Octal notation (YAML-specific)
   JSON number_codec
     decode: 42
   YAML number_codec
-    decode: ERROR: Expected number but found scalar 0o52
-  File "-":
-  File "-": in member value of
-  File "-": NumberTest object
+    decode: 42
 
 Negative numbers
 

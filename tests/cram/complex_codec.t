@@ -32,10 +32,7 @@ Multiple optional fields with different combinations
 
   $ test_complex complex-optional ../data/complex/complex_optional.yml
   JSON: complex_optional: host="example.com", port=443, ssl=true, fallbacks=2
-  YAML: complex_optional: ERROR: Expected array<string> but found sequence
-  File "-":
-  File "-": in member fallback_hosts of
-  File "-": Config object
+  YAML: complex_optional: host="example.com", port=443, ssl=true, fallbacks=2
 
 ================================================================================
 HETEROGENEOUS DATA

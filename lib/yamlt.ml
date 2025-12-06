@@ -154,11 +154,13 @@ let rec decode_scalar_as :
          | None -> err_type_mismatch d ev.span t ~fnd:("scalar " ^ value))
   | String map ->
       (* Don't decode null values as strings - they should fail so outer combinators
-         like 'option' or 'any' can handle them properly *)
-      if is_null_scalar value then
+         like 'option' or 'any' can handle them properly.
+         BUT: quoted strings should always be treated as strings, even if they
+         look like null (e.g., "" or "null") *)
+      if style = `Plain && is_null_scalar value then
         err_type_mismatch d ev.span t ~fnd:"null"
       else
-        (* Strings accept any non-null scalar value *)
+        (* Strings accept quoted scalars or non-null plain scalars *)
         map.dec meta value
   | Map m ->
       (* Handle Map combinators (e.g., from Jsont.option) *)

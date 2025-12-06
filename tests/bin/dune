@@ -49,3 +49,11 @@
 (executable
  (name test_some_vs_option)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_comprehensive)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_flow_newline)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))

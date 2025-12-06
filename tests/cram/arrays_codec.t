@@ -78,7 +78,12 @@ Arrays with null elements
   File "-", line 1, characters 11-22: array<string>
   File "-": in member values of
   File "-", line 1, characters 0-22: Nullable object
-  YAML: nullable_array: ["hello"; "null"; "world"; "null"; "test"]
+  YAML: nullable_array: ERROR: Expected string but found null
+  File "-":
+  at index 1 of
+  File "-": array<string>
+  File "-": in member values of
+  File "-": Nullable object
 
 ================================================================================
 ERROR HANDLING
@@ -112,7 +117,7 @@ Encode arrays to JSON and YAML formats
   strings:
     - hello
     - world
-  YAML Flow: {numbers: [1.0, 2.0, 3.0, 4.0, 5.0]strings, [hello, world]}
+  YAML Flow: {numbers: [1.0, 2.0, 3.0, 4.0, 5.0], strings: [hello, world]}
 
 ================================================================================
 NEGATIVE TESTS - Wrong File Types

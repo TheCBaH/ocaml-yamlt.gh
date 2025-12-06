@@ -31,10 +31,7 @@ YAML supports hex, octal, and binary number formats
 
   $ test_formats number-formats ../data/formats/number_formats.yml
   JSON: number_formats: hex=255, octal=63, binary=10
-  YAML: number_formats: ERROR: Expected number but found scalar 0o77
-  File "-":
-  File "-": in member octal of
-  File "-": Numbers object
+  YAML: number_formats: hex=255, octal=63, binary=10
 
 ================================================================================
 COMMENTS
@@ -56,7 +53,10 @@ Empty or null documents handled correctly
   File "-", line 1, characters 10-11:
   File "-": in member value of
   File "-", line 1, characters 0-11: Wrapper object
-  YAML: empty_document: value=Some("null")
+  YAML: empty_document: ERROR: Expected string but found null
+  File "-":
+  File "-": in member value of
+  File "-": Wrapper object
 
 ================================================================================
 EXPLICIT TYPE TAGS
@@ -85,7 +85,7 @@ Compare Block vs Flow encoding styles
     count: 5.0
   
   YAML Flow:
-  {name: test, values: [1.0, 2.0, 3.0]nested, {enabled: true, count: 5.0}}
+  {name: test, values: [1.0, 2.0, 3.0], nested: {enabled: true, count: 5.0}}
 
 
 ================================================================================
