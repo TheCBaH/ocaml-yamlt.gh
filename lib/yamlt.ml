@@ -650,15 +650,14 @@ let encode_bool e _meta b =
 (* Encode number *)
 let encode_number e _meta f =
   let value =
-    if Float.is_nan f then ".nan"
-    else if f = Float.infinity then ".inf"
-    else if f = Float.neg_infinity then "-.inf"
-    else
-      let s = Printf.sprintf "%.17g" f in
-      (* Ensure it looks like a number *)
-      if String.contains s '.' || String.contains s 'e' || String.contains s 'E'
-      then s
-      else s ^ ".0"
+    match Float.classify_float f with
+    | FP_nan -> ".nan"
+    | FP_infinite -> if f > 0.0 then ".inf" else "-.inf"
+    | _ ->
+        if Float.is_integer f && Float.abs f < 1e15 then
+          Printf.sprintf "%.0f" f
+        else
+          Printf.sprintf "%g" f
   in
   Emitter.emit e.emitter (Event.Scalar {
     anchor = None;

@@ -119,9 +119,9 @@ Encode objects to JSON and YAML formats
   JSON: {"name":"Alice","age":30,"active":true}
   YAML Block:
   name: Alice
-  age: 30.0
+  age: 30
   active: true
-  YAML Flow: {name: Alice, age: 30.0, active: true}
+  YAML Flow: {name: Alice, age: 30, active: true}
 
 ================================================================================
 NEGATIVE TESTS - Wrong File Types

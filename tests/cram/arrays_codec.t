@@ -109,15 +109,15 @@ Encode arrays to JSON and YAML formats
   JSON: {"numbers":[1,2,3,4,5],"strings":["hello","world"]}
   YAML Block:
   numbers:
-    - 1.0
-    - 2.0
-    - 3.0
-    - 4.0
-    - 5.0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
   strings:
     - hello
     - world
-  YAML Flow: {numbers: [1.0, 2.0, 3.0, 4.0, 5.0], strings: [hello, world]}
+  YAML Flow: {numbers: [1, 2, 3, 4, 5], strings: [hello, world]}
 
 ================================================================================
 NEGATIVE TESTS - Wrong File Types

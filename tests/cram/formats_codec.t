@@ -77,15 +77,15 @@ Compare Block vs Flow encoding styles
   YAML Block:
   name: test
   values:
-    - 1.0
-    - 2.0
-    - 3.0
+    - 1
+    - 2
+    - 3
   nested:
     enabled: true
-    count: 5.0
+    count: 5
   
   YAML Flow:
-  {name: test, values: [1.0, 2.0, 3.0], nested: {enabled: true, count: 5.0}}
+  {name: test, values: [1, 2, 3], nested: {enabled: true, count: 5}}
 
 
 ================================================================================
