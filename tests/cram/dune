@@ -12,4 +12,5 @@
   (glob_files ../data/complex/*.yml)
   (glob_files ../data/complex/*.json)
   (glob_files ../data/edge/*.yml)
-  (glob_files ../data/edge/*.json)))
+  (glob_files ../data/edge/*.json)
+  (glob_files ../data/locations/*.yml)))

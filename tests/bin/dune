@@ -57,3 +57,8 @@
 (executable
  (name test_flow_newline)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_locations)
+ (public_name test_locations)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
