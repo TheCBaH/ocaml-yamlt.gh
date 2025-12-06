@@ -1,7 +1,7 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) 2024 The yamlrw programmers. All rights reserved.
-   SPDX-License-Identifier: ISC
-  ---------------------------------------------------------------------------*)
+  Copyright (c) 2025 Anil Madhavapeddy <anil@recoil.org>. All rights reserved.
+  SPDX-License-Identifier: ISC
+ ---------------------------------------------------------------------------*)
 
 (** Test scalar type resolution with Yamlt codec *)
 
@@ -121,53 +121,48 @@ let test_special_floats file =
   let result = Yamlt.decode_string number_codec yaml in
   match result with
   | Ok f ->
-      if Float.is_nan f then
-        Printf.printf "value: NaN\n"
-      else if f = Float.infinity then
-        Printf.printf "value: +Infinity\n"
-      else if f = Float.neg_infinity then
-        Printf.printf "value: -Infinity\n"
-      else
-        Printf.printf "value: %.17g\n" f
-  | Error e ->
-      Printf.printf "ERROR: %s\n" e
+      if Float.is_nan f then Printf.printf "value: NaN\n"
+      else if f = Float.infinity then Printf.printf "value: +Infinity\n"
+      else if f = Float.neg_infinity then Printf.printf "value: -Infinity\n"
+      else Printf.printf "value: %.17g\n" f
+  | Error e -> Printf.printf "ERROR: %s\n" e
 
 (* Test: Type mismatch errors *)
 let test_type_mismatch file expected_type =
   let yaml = read_file file in
 
   match expected_type with
-    | "bool" ->
-        let codec =
-          Jsont.Object.map ~kind:"BoolTest" (fun b -> b)
-          |> Jsont.Object.mem "value" Jsont.bool ~enc:(fun b -> b)
-          |> Jsont.Object.finish
-        in
-        let result = Yamlt.decode_string codec yaml in
-        (match result with
-         | Ok _ -> Printf.printf "Unexpected success\n"
-         | Error e -> Printf.printf "Expected error: %s\n" e)
-    | "number" ->
-        let codec =
-          Jsont.Object.map ~kind:"NumberTest" (fun n -> n)
-          |> Jsont.Object.mem "value" Jsont.number ~enc:(fun n -> n)
-          |> Jsont.Object.finish
-        in
-        let result = Yamlt.decode_string codec yaml in
-        (match result with
-         | Ok _ -> Printf.printf "Unexpected success\n"
-         | Error e -> Printf.printf "Expected error: %s\n" e)
-    | "null" ->
-        let codec =
-          Jsont.Object.map ~kind:"NullTest" (fun n -> n)
-          |> Jsont.Object.mem "value" (Jsont.null ()) ~enc:(fun n -> n)
-          |> Jsont.Object.finish
-        in
-        let result = Yamlt.decode_string codec yaml in
-        (match result with
-         | Ok _ -> Printf.printf "Unexpected success\n"
-         | Error e -> Printf.printf "Expected error: %s\n" e)
-    | _ -> failwith "unknown type"
+  | "bool" -> (
+      let codec =
+        Jsont.Object.map ~kind:"BoolTest" (fun b -> b)
+        |> Jsont.Object.mem "value" Jsont.bool ~enc:(fun b -> b)
+        |> Jsont.Object.finish
+      in
+      let result = Yamlt.decode_string codec yaml in
+      match result with
+      | Ok _ -> Printf.printf "Unexpected success\n"
+      | Error e -> Printf.printf "Expected error: %s\n" e)
+  | "number" -> (
+      let codec =
+        Jsont.Object.map ~kind:"NumberTest" (fun n -> n)
+        |> Jsont.Object.mem "value" Jsont.number ~enc:(fun n -> n)
+        |> Jsont.Object.finish
+      in
+      let result = Yamlt.decode_string codec yaml in
+      match result with
+      | Ok _ -> Printf.printf "Unexpected success\n"
+      | Error e -> Printf.printf "Expected error: %s\n" e)
+  | "null" -> (
+      let codec =
+        Jsont.Object.map ~kind:"NullTest" (fun n -> n)
+        |> Jsont.Object.mem "value" (Jsont.null ()) ~enc:(fun n -> n)
+        |> Jsont.Object.finish
+      in
+      let result = Yamlt.decode_string codec yaml in
+      match result with
+      | Ok _ -> Printf.printf "Unexpected success\n"
+      | Error e -> Printf.printf "Expected error: %s\n" e)
+  | _ -> failwith "unknown type"
 
 (* Test: Decode with Jsont.json to see auto-resolution *)
 let test_any_resolution file =
@@ -191,7 +186,7 @@ let test_any_resolution file =
 (* Test: Encoding to different formats *)
 let test_encode_formats value_type value =
   match value_type with
-  | "bool" ->
+  | "bool" -> (
       let codec =
         Jsont.Object.map ~kind:"BoolTest" (fun b -> b)
         |> Jsont.Object.mem "value" Jsont.bool ~enc:(fun b -> b)
@@ -199,15 +194,15 @@ let test_encode_formats value_type value =
       in
       let v = bool_of_string value in
       (match Jsont_bytesrw.encode_string codec v with
-       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
-       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
+      | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
+      | Error e -> Printf.printf "JSON ERROR: %s\n" e);
       (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-       | Ok s -> Printf.printf "YAML Block:\n%s" s
-       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-       | Ok s -> Printf.printf "YAML Flow: %s" s
-       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
-  | "number" ->
+      | Ok s -> Printf.printf "YAML Block:\n%s" s
+      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
+      | Ok s -> Printf.printf "YAML Flow: %s" s
+      | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
+  | "number" -> (
       let codec =
         Jsont.Object.map ~kind:"NumberTest" (fun n -> n)
         |> Jsont.Object.mem "value" Jsont.number ~enc:(fun n -> n)
@@ -215,15 +210,15 @@ let test_encode_formats value_type value =
       in
       let v = float_of_string value in
       (match Jsont_bytesrw.encode_string codec v with
-       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
-       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
+      | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
+      | Error e -> Printf.printf "JSON ERROR: %s\n" e);
       (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-       | Ok s -> Printf.printf "YAML Block:\n%s" s
-       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-       | Ok s -> Printf.printf "YAML Flow: %s" s
-       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
-  | "string" ->
+      | Ok s -> Printf.printf "YAML Block:\n%s" s
+      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
+      | Ok s -> Printf.printf "YAML Flow: %s" s
+      | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
+  | "string" -> (
       let codec =
         Jsont.Object.map ~kind:"StringTest" (fun s -> s)
         |> Jsont.Object.mem "value" Jsont.string ~enc:(fun s -> s)
@@ -231,15 +226,15 @@ let test_encode_formats value_type value =
       in
       let v = value in
       (match Jsont_bytesrw.encode_string codec v with
-       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
-       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
+      | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
+      | Error e -> Printf.printf "JSON ERROR: %s\n" e);
       (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-       | Ok s -> Printf.printf "YAML Block:\n%s" s
-       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-       | Ok s -> Printf.printf "YAML Flow: %s" s
-       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
-  | "null" ->
+      | Ok s -> Printf.printf "YAML Block:\n%s" s
+      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
+      | Ok s -> Printf.printf "YAML Flow: %s" s
+      | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
+  | "null" -> (
       let codec =
         Jsont.Object.map ~kind:"NullTest" (fun n -> n)
         |> Jsont.Object.mem "value" (Jsont.null ()) ~enc:(fun n -> n)
@@ -247,14 +242,14 @@ let test_encode_formats value_type value =
       in
       let v = () in
       (match Jsont_bytesrw.encode_string codec v with
-       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
-       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
+      | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
+      | Error e -> Printf.printf "JSON ERROR: %s\n" e);
       (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-       | Ok s -> Printf.printf "YAML Block:\n%s" s
-       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-       | Ok s -> Printf.printf "YAML Flow: %s" s
-       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
+      | Ok s -> Printf.printf "YAML Block:\n%s" s
+      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
+      | Ok s -> Printf.printf "YAML Flow: %s" s
+      | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
   | _ -> failwith "unknown type"
 
 let () =
@@ -266,39 +261,31 @@ let () =
   end;
 
   match Sys.argv.(1) with
-  | "null" when Array.length Sys.argv = 3 ->
-      test_null_resolution Sys.argv.(2)
-
-  | "bool" when Array.length Sys.argv = 3 ->
-      test_bool_resolution Sys.argv.(2)
-
+  | "null" when Array.length Sys.argv = 3 -> test_null_resolution Sys.argv.(2)
+  | "bool" when Array.length Sys.argv = 3 -> test_bool_resolution Sys.argv.(2)
   | "number" when Array.length Sys.argv = 3 ->
       test_number_resolution Sys.argv.(2)
-
   | "string" when Array.length Sys.argv = 3 ->
       test_string_resolution Sys.argv.(2)
-
   | "special-float" when Array.length Sys.argv = 3 ->
       test_special_floats Sys.argv.(2)
-
   | "type-mismatch" when Array.length Sys.argv = 4 ->
       test_type_mismatch Sys.argv.(2) Sys.argv.(3)
-
-  | "any" when Array.length Sys.argv = 3 ->
-      test_any_resolution Sys.argv.(2)
-
+  | "any" when Array.length Sys.argv = 3 -> test_any_resolution Sys.argv.(2)
   | "encode" when Array.length Sys.argv = 4 ->
       test_encode_formats Sys.argv.(2) Sys.argv.(3)
-
   | _ ->
       prerr_endline usage;
       prerr_endline "Commands:";
       prerr_endline "  null <file>              - Test null resolution";
-      prerr_endline "  bool <file>              - Test bool vs string resolution";
+      prerr_endline
+        "  bool <file>              - Test bool vs string resolution";
       prerr_endline "  number <file>            - Test number resolution";
       prerr_endline "  string <file>            - Test string resolution";
       prerr_endline "  special-float <file>     - Test .inf, .nan, etc.";
-      prerr_endline "  type-mismatch <file> <type> - Test error on type mismatch";
-      prerr_endline "  any <file>               - Test Jsont.any auto-resolution";
+      prerr_endline
+        "  type-mismatch <file> <type> - Test error on type mismatch";
+      prerr_endline
+        "  any <file>               - Test Jsont.any auto-resolution";
       prerr_endline "  encode <type> <value>    - Test encoding to JSON/YAML";
       exit 1

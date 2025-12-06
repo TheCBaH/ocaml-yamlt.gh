@@ -1,7 +1,15 @@
 (lang dune 3.18)
+
 (name yamlt)
 
 (generate_opam_files true)
+
+(license ISC)
+(authors "Anil Madhavapeddy")
+(homepage "https://tangled.org/@anil.recoil.org/ocaml-yamlt")
+(maintainers "Anil Madhavapeddy <anil@recoil.org>")
+(bug_reports "https://tangled.org/@anil.recoil.org/ocaml-yamlt/issues")
+(maintenance_intent "(latest)")
 
 (package
  (name yamlt)
@@ -11,4 +19,5 @@
   (ocaml (>= 4.14.0))
   yamlrw
   jsont
-  bytesrw))
+  bytesrw
+  (odoc :with-doc)))

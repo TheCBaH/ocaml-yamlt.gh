@@ -1,7 +1,7 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) 2024 The yamlrw programmers. All rights reserved.
-   SPDX-License-Identifier: ISC
-  ---------------------------------------------------------------------------*)
+  Copyright (c) 2025 Anil Madhavapeddy <anil@recoil.org>. All rights reserved.
+  SPDX-License-Identifier: ISC
+ ---------------------------------------------------------------------------*)
 
 (** Test format-specific features with Yamlt *)
 
@@ -27,7 +27,7 @@ let show_result_both label json_result yaml_result =
 (* Test: Multi-line strings - literal style *)
 let test_literal_string file =
   let module M = struct
-    type text = { content: string }
+    type text = { content : string }
 
     let text_codec =
       Jsont.Object.map ~kind:"Text" (fun content -> { content })
@@ -39,7 +39,6 @@ let test_literal_string file =
         (List.length (String.split_on_char '\n' t.content))
         (String.length t.content)
   end in
-
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.text_codec json in
@@ -52,7 +51,7 @@ let test_literal_string file =
 (* Test: Multi-line strings - folded style *)
 let test_folded_string file =
   let module M = struct
-    type text = { content: string }
+    type text = { content : string }
 
     let text_codec =
       Jsont.Object.map ~kind:"Text" (fun content -> { content })
@@ -60,12 +59,12 @@ let test_folded_string file =
       |> Jsont.Object.finish
 
     let show t =
-      Printf.sprintf "length=%d, newlines=%d"
-        (String.length t.content)
-        (List.length (List.filter (fun c -> c = '\n')
-          (List.init (String.length t.content) (String.get t.content))))
+      Printf.sprintf "length=%d, newlines=%d" (String.length t.content)
+        (List.length
+           (List.filter
+              (fun c -> c = '\n')
+              (List.init (String.length t.content) (String.get t.content))))
   end in
-
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.text_codec json in
@@ -78,10 +77,11 @@ let test_folded_string file =
 (* Test: Number formats - hex, octal, binary *)
 let test_number_formats file =
   let module M = struct
-    type numbers = { hex: float; octal: float; binary: float }
+    type numbers = { hex : float; octal : float; binary : float }
 
     let numbers_codec =
-      Jsont.Object.map ~kind:"Numbers" (fun hex octal binary -> { hex; octal; binary })
+      Jsont.Object.map ~kind:"Numbers" (fun hex octal binary ->
+          { hex; octal; binary })
       |> Jsont.Object.mem "hex" Jsont.number ~enc:(fun n -> n.hex)
       |> Jsont.Object.mem "octal" Jsont.number ~enc:(fun n -> n.octal)
       |> Jsont.Object.mem "binary" Jsont.number ~enc:(fun n -> n.binary)
@@ -90,7 +90,6 @@ let test_number_formats file =
     let show n =
       Printf.sprintf "hex=%.0f, octal=%.0f, binary=%.0f" n.hex n.octal n.binary
   end in
-
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
@@ -103,15 +102,8 @@ let test_number_formats file =
 (* Test: Block vs Flow style encoding *)
 let test_encode_styles () =
   let module M = struct
-    type data = {
-      name: string;
-      values: int array;
-      nested: nested_data;
-    }
-    and nested_data = {
-      enabled: bool;
-      count: int;
-    }
+    type data = { name : string; values : int array; nested : nested_data }
+    and nested_data = { enabled : bool; count : int }
 
     let nested_codec =
       Jsont.Object.map ~kind:"Nested" (fun enabled count -> { enabled; count })
@@ -120,36 +112,40 @@ let test_encode_styles () =
       |> Jsont.Object.finish
 
     let data_codec =
-      Jsont.Object.map ~kind:"Data" (fun name values nested -> { name; values; nested })
+      Jsont.Object.map ~kind:"Data" (fun name values nested ->
+          { name; values; nested })
       |> Jsont.Object.mem "name" Jsont.string ~enc:(fun d -> d.name)
-      |> Jsont.Object.mem "values" (Jsont.array Jsont.int) ~enc:(fun d -> d.values)
+      |> Jsont.Object.mem "values" (Jsont.array Jsont.int) ~enc:(fun d ->
+          d.values)
       |> Jsont.Object.mem "nested" nested_codec ~enc:(fun d -> d.nested)
       |> Jsont.Object.finish
   end in
-
-  let data = {
-    M.name = "test";
-    values = [|1; 2; 3|];
-    nested = { enabled = true; count = 5 };
-  } in
+  let data =
+    {
+      M.name = "test";
+      values = [| 1; 2; 3 |];
+      nested = { enabled = true; count = 5 };
+    }
+  in
 
   (* Encode to YAML Block style *)
   (match Yamlt.encode_string ~format:Yamlt.Block M.data_codec data with
-   | Ok s -> Printf.printf "YAML Block:\n%s\n" s
-   | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+  | Ok s -> Printf.printf "YAML Block:\n%s\n" s
+  | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
 
   (* Encode to YAML Flow style *)
-  (match Yamlt.encode_string ~format:Yamlt.Flow M.data_codec data with
-   | Ok s -> Printf.printf "YAML Flow:\n%s\n" s
-   | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
+  match Yamlt.encode_string ~format:Yamlt.Flow M.data_codec data with
+  | Ok s -> Printf.printf "YAML Flow:\n%s\n" s
+  | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e
 
 (* Test: Comments in YAML (should be ignored) *)
 let test_comments file =
   let module M = struct
-    type config = { host: string; port: int; debug: bool }
+    type config = { host : string; port : int; debug : bool }
 
     let config_codec =
-      Jsont.Object.map ~kind:"Config" (fun host port debug -> { host; port; debug })
+      Jsont.Object.map ~kind:"Config" (fun host port debug ->
+          { host; port; debug })
       |> Jsont.Object.mem "host" Jsont.string ~enc:(fun c -> c.host)
       |> Jsont.Object.mem "port" Jsont.int ~enc:(fun c -> c.port)
       |> Jsont.Object.mem "debug" Jsont.bool ~enc:(fun c -> c.debug)
@@ -158,7 +154,6 @@ let test_comments file =
     let show c =
       Printf.sprintf "host=%S, port=%d, debug=%b" c.host c.port c.debug
   end in
-
   let yaml = read_file file in
   let yaml_result = Yamlt.decode_string M.config_codec yaml in
 
@@ -169,11 +164,12 @@ let test_comments file =
 (* Test: Empty documents and null documents *)
 let test_empty_document file =
   let module M = struct
-    type wrapper = { value: string option }
+    type wrapper = { value : string option }
 
     let wrapper_codec =
       Jsont.Object.map ~kind:"Wrapper" (fun value -> { value })
-      |> Jsont.Object.mem "value" (Jsont.some Jsont.string) ~enc:(fun w -> w.value)
+      |> Jsont.Object.mem "value" (Jsont.some Jsont.string) ~enc:(fun w ->
+          w.value)
       |> Jsont.Object.finish
 
     let show w =
@@ -181,7 +177,6 @@ let test_empty_document file =
       | None -> "value=None"
       | Some s -> Printf.sprintf "value=Some(%S)" s
   end in
-
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.wrapper_codec json in
@@ -194,7 +189,7 @@ let test_empty_document file =
 (* Test: Explicit typing with tags (if supported) *)
 let test_explicit_tags file =
   let module M = struct
-    type value_holder = { data: string }
+    type value_holder = { data : string }
 
     let value_codec =
       Jsont.Object.map ~kind:"ValueHolder" (fun data -> { data })
@@ -203,7 +198,6 @@ let test_explicit_tags file =
 
     let show v = Printf.sprintf "data=%S" v.data
   end in
-
   let yaml = read_file file in
   let yaml_result = Yamlt.decode_string M.value_codec yaml in
 
@@ -222,31 +216,25 @@ let () =
   match Sys.argv.(1) with
   | "literal" when Stdlib.Array.length Sys.argv = 3 ->
       test_literal_string Sys.argv.(2)
-
   | "folded" when Stdlib.Array.length Sys.argv = 3 ->
       test_folded_string Sys.argv.(2)
-
   | "number-formats" when Stdlib.Array.length Sys.argv = 3 ->
       test_number_formats Sys.argv.(2)
-
   | "encode-styles" when Stdlib.Array.length Sys.argv = 2 ->
       test_encode_styles ()
-
   | "comments" when Stdlib.Array.length Sys.argv = 3 ->
       test_comments Sys.argv.(2)
-
   | "empty-doc" when Stdlib.Array.length Sys.argv = 3 ->
       test_empty_document Sys.argv.(2)
-
   | "explicit-tags" when Stdlib.Array.length Sys.argv = 3 ->
       test_explicit_tags Sys.argv.(2)
-
   | _ ->
       prerr_endline usage;
       prerr_endline "Commands:";
       prerr_endline "  literal <file>         - Test literal multi-line strings";
       prerr_endline "  folded <file>          - Test folded multi-line strings";
-      prerr_endline "  number-formats <file>  - Test hex/octal/binary number formats";
+      prerr_endline
+        "  number-formats <file>  - Test hex/octal/binary number formats";
       prerr_endline "  encode-styles          - Test block vs flow encoding";
       prerr_endline "  comments <file>        - Test YAML with comments";
       prerr_endline "  empty-doc <file>       - Test empty documents";

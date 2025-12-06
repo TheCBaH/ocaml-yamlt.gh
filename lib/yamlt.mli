@@ -1,20 +1,22 @@
 (*---------------------------------------------------------------------------
-   Copyright (c) 2024 The yamlrw programmers. All rights reserved.
-   SPDX-License-Identifier: ISC
-  ---------------------------------------------------------------------------*)
+  Copyright (c) 2025 Anil Madhavapeddy <anil@recoil.org>. All rights reserved.
+  SPDX-License-Identifier: ISC
+ ---------------------------------------------------------------------------*)
 
 (** YAML codec using Jsont type descriptions.
 
-    This module provides YAML streaming encode/decode that interprets
-    {!Jsont.t} type descriptions, allowing the same codec definitions
-    to work for both JSON and YAML.
+    This module provides YAML streaming encode/decode that interprets {!Jsont.t}
+    type descriptions, allowing the same codec definitions to work for both JSON
+    and YAML.
 
     {b Example:}
     {[
       (* Define a codec once using Jsont *)
       module Config = struct
-        type t = { name: string; port: int }
+        type t = { name : string; port : int }
+
         let make name port = { name; port }
+
         let jsont =
           Jsont.Object.map ~kind:"Config" make
           |> Jsont.Object.mem "name" Jsont.string ~enc:(fun c -> c.name)
@@ -28,135 +30,192 @@
     ]}
 
     See notes about {{!yaml_mapping}YAML to JSON mapping} and
-    {{!yaml_scalars}YAML scalar resolution}.
-*)
+    {{!yaml_scalars}YAML scalar resolution}. *)
 
 open Bytesrw
 
 (** {1:decode Decode} *)
 
 val decode :
-  ?layout:bool -> ?locs:bool -> ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int -> ?max_nodes:int ->
-  'a Jsont.t -> Bytes.Reader.t -> ('a, string) result
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  'a Jsont.t ->
+  Bytes.Reader.t ->
+  ('a, string) result
 (** [decode t r] decodes a value from YAML reader [r] according to type [t].
-    {ul
-    {- If [layout] is [true], style information is preserved in {!Jsont.Meta.t}
-       values (for potential round-tripping). Defaults to [false].}
-    {- If [locs] is [true], source locations are preserved in {!Jsont.Meta.t}
-       values and error messages are precisely located. Defaults to [false].}
-    {- [file] is the file path for error messages.
-       Defaults to {!Jsont.Textloc.file_none}.}
-    {- [max_depth] limits nesting depth to prevent stack overflow
-       (billion laughs protection). Defaults to [100].}
-    {- [max_nodes] limits total decoded nodes
-       (billion laughs protection). Defaults to [10_000_000].}}
+    - If [layout] is [true], style information is preserved in {!Jsont.Meta.t}
+      values (for potential round-tripping). Defaults to [false].
+    - If [locs] is [true], source locations are preserved in {!Jsont.Meta.t}
+      values and error messages are precisely located. Defaults to [false].
+    - [file] is the file path for error messages. Defaults to
+      {!Jsont.Textloc.file_none}.
+    - [max_depth] limits nesting depth to prevent stack overflow (billion laughs
+      protection). Defaults to [100].
+    - [max_nodes] limits total decoded nodes (billion laughs protection).
+      Defaults to [10_000_000].
 
-    The YAML input must contain exactly one document. Multi-document
-    streams are not supported; use {!decode_all} for those. *)
+    The YAML input must contain exactly one document. Multi-document streams are
+    not supported; use {!decode_all} for those. *)
 
 val decode' :
-  ?layout:bool -> ?locs:bool -> ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int -> ?max_nodes:int ->
-  'a Jsont.t -> Bytes.Reader.t -> ('a, Jsont.Error.t) result
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  'a Jsont.t ->
+  Bytes.Reader.t ->
+  ('a, Jsont.Error.t) result
 (** [decode'] is like {!val-decode} but preserves the error structure. *)
 
 val decode_string :
-  ?layout:bool -> ?locs:bool -> ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int -> ?max_nodes:int ->
-  'a Jsont.t -> string -> ('a, string) result
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  'a Jsont.t ->
+  string ->
+  ('a, string) result
 (** [decode_string] is like {!val-decode} but decodes directly from a string. *)
 
 val decode_string' :
-  ?layout:bool -> ?locs:bool -> ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int -> ?max_nodes:int ->
-  'a Jsont.t -> string -> ('a, Jsont.Error.t) result
-(** [decode_string'] is like {!val-decode'} but decodes directly from a string. *)
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  'a Jsont.t ->
+  string ->
+  ('a, Jsont.Error.t) result
+(** [decode_string'] is like {!val-decode'} but decodes directly from a string.
+*)
 
 (** {1:encode Encode} *)
 
 (** YAML output format. *)
 type yaml_format =
-  | Block   (** Block style (indented) - default. Clean, readable YAML. *)
-  | Flow    (** Flow style (JSON-like). Compact, single-line collections. *)
+  | Block  (** Block style (indented) - default. Clean, readable YAML. *)
+  | Flow  (** Flow style (JSON-like). Compact, single-line collections. *)
   | Layout  (** Preserve layout from {!Jsont.Meta.t} when available. *)
 
 val encode :
-  ?buf:Stdlib.Bytes.t -> ?format:yaml_format -> ?indent:int ->
-  ?explicit_doc:bool -> ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t -> 'a -> eod:bool -> Bytes.Writer.t -> (unit, string) result
+  ?buf:Stdlib.Bytes.t ->
+  ?format:yaml_format ->
+  ?indent:int ->
+  ?explicit_doc:bool ->
+  ?scalar_style:Yamlrw.Scalar_style.t ->
+  'a Jsont.t ->
+  'a ->
+  eod:bool ->
+  Bytes.Writer.t ->
+  (unit, string) result
 (** [encode t v w] encodes value [v] according to type [t] to YAML on [w].
-    {ul
-    {- If [buf] is specified, it is used as a buffer for output slices.
-       Defaults to a buffer of length {!Bytesrw.Bytes.Writer.slice_length}[ w].}
-    {- [format] controls the output style. Defaults to {!Block}.}
-    {- [indent] is the indentation width in spaces. Defaults to [2].}
-    {- [explicit_doc] if [true], emits explicit document markers
-       ([---] and [...]). Defaults to [false].}
-    {- [scalar_style] is the preferred style for string scalars.
-       Defaults to [`Any] (auto-detect based on content).}
-    {- [eod] indicates whether {!Bytesrw.Bytes.Slice.eod} should be
-       written on [w] after encoding.}} *)
+    - If [buf] is specified, it is used as a buffer for output slices. Defaults
+      to a buffer of length {!Bytesrw.Bytes.Writer.slice_length}[ w].
+    - [format] controls the output style. Defaults to {!Block}.
+    - [indent] is the indentation width in spaces. Defaults to [2].
+    - [explicit_doc] if [true], emits explicit document markers ([---] and
+      [...]). Defaults to [false].
+    - [scalar_style] is the preferred style for string scalars. Defaults to
+      [`Any] (auto-detect based on content).
+    - [eod] indicates whether {!Bytesrw.Bytes.Slice.eod} should be written on
+      [w] after encoding. *)
 
 val encode' :
-  ?buf:Stdlib.Bytes.t -> ?format:yaml_format -> ?indent:int ->
-  ?explicit_doc:bool -> ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t -> 'a -> eod:bool -> Bytes.Writer.t -> (unit, Jsont.Error.t) result
+  ?buf:Stdlib.Bytes.t ->
+  ?format:yaml_format ->
+  ?indent:int ->
+  ?explicit_doc:bool ->
+  ?scalar_style:Yamlrw.Scalar_style.t ->
+  'a Jsont.t ->
+  'a ->
+  eod:bool ->
+  Bytes.Writer.t ->
+  (unit, Jsont.Error.t) result
 (** [encode'] is like {!val-encode} but preserves the error structure. *)
 
 val encode_string :
-  ?buf:Stdlib.Bytes.t -> ?format:yaml_format -> ?indent:int ->
-  ?explicit_doc:bool -> ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t -> 'a -> (string, string) result
+  ?buf:Stdlib.Bytes.t ->
+  ?format:yaml_format ->
+  ?indent:int ->
+  ?explicit_doc:bool ->
+  ?scalar_style:Yamlrw.Scalar_style.t ->
+  'a Jsont.t ->
+  'a ->
+  (string, string) result
 (** [encode_string] is like {!val-encode} but writes to a string. *)
 
 val encode_string' :
-  ?buf:Stdlib.Bytes.t -> ?format:yaml_format -> ?indent:int ->
-  ?explicit_doc:bool -> ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t -> 'a -> (string, Jsont.Error.t) result
+  ?buf:Stdlib.Bytes.t ->
+  ?format:yaml_format ->
+  ?indent:int ->
+  ?explicit_doc:bool ->
+  ?scalar_style:Yamlrw.Scalar_style.t ->
+  'a Jsont.t ->
+  'a ->
+  (string, Jsont.Error.t) result
 (** [encode_string'] is like {!val-encode'} but writes to a string. *)
 
 (** {1:recode Recode}
 
     The defaults in these functions are those of {!val-decode} and
-    {!val-encode}, except if [layout] is [true], [format] defaults to
-    {!Layout} and vice-versa. *)
+    {!val-encode}, except if [layout] is [true], [format] defaults to {!Layout}
+    and vice-versa. *)
 
 val recode :
-  ?layout:bool -> ?locs:bool -> ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int -> ?max_nodes:int ->
-  ?buf:Stdlib.Bytes.t -> ?format:yaml_format -> ?indent:int ->
-  ?explicit_doc:bool -> ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t -> Bytes.Reader.t -> Bytes.Writer.t -> eod:bool ->
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  ?buf:Stdlib.Bytes.t ->
+  ?format:yaml_format ->
+  ?indent:int ->
+  ?explicit_doc:bool ->
+  ?scalar_style:Yamlrw.Scalar_style.t ->
+  'a Jsont.t ->
+  Bytes.Reader.t ->
+  Bytes.Writer.t ->
+  eod:bool ->
   (unit, string) result
 (** [recode t r w] is {!val-decode} followed by {!val-encode}. *)
 
 val recode_string :
-  ?layout:bool -> ?locs:bool -> ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int -> ?max_nodes:int ->
-  ?buf:Stdlib.Bytes.t -> ?format:yaml_format -> ?indent:int ->
-  ?explicit_doc:bool -> ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t -> string -> (string, string) result
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  ?buf:Stdlib.Bytes.t ->
+  ?format:yaml_format ->
+  ?indent:int ->
+  ?explicit_doc:bool ->
+  ?scalar_style:Yamlrw.Scalar_style.t ->
+  'a Jsont.t ->
+  string ->
+  (string, string) result
 (** [recode_string] is like {!val-recode} but operates on strings. *)
 
 (** {1:yaml_mapping YAML to JSON Mapping}
 
-    YAML is a superset of JSON. This module maps YAML structures to
-    the JSON data model that {!Jsont.t} describes:
+    YAML is a superset of JSON. This module maps YAML structures to the JSON
+    data model that {!Jsont.t} describes:
 
-    {ul
-    {- YAML scalars map to JSON null, boolean, number, or string
-       depending on content and the expected type}
-    {- YAML sequences map to JSON arrays}
-    {- YAML mappings map to JSON objects (keys must be strings)}
-    {- YAML aliases are resolved during decoding}
-    {- YAML tags are used to guide type resolution when present}}
+    - YAML scalars map to JSON null, boolean, number, or string depending on
+      content and the expected type
+    - YAML sequences map to JSON arrays
+    - YAML mappings map to JSON objects (keys must be strings)
+    - YAML aliases are resolved during decoding
+    - YAML tags are used to guide type resolution when present
 
     {b Limitations:}
-    {ul
-    {- Only string keys are supported in mappings (JSON object compatibility)}
-    {- Anchors and aliases are resolved; the alias structure is not preserved}
-    {- Multi-document streams require {!decode_all}}} *)
+    - Only string keys are supported in mappings (JSON object compatibility)
+    - Anchors and aliases are resolved; the alias structure is not preserved
+    - Multi-document streams require {!decode_all} *)
 
 (** {1:yaml_scalars YAML Scalar Resolution}
 
@@ -164,15 +223,14 @@ val recode_string :
 
     {b Null:} [null], [Null], [NULL], [~], or empty string
 
-    {b Boolean:} [true], [True], [TRUE], [false], [False], [FALSE],
-    [yes], [Yes], [YES], [no], [No], [NO], [on], [On], [ON],
-    [off], [Off], [OFF]
+    {b Boolean:} [true], [True], [TRUE], [false], [False], [FALSE], [yes],
+    [Yes], [YES], [no], [No], [NO], [on], [On], [ON], [off], [Off], [OFF]
 
     {b Number:} Decimal integers, floats, hex ([0x...]), octal ([0o...]),
     infinity ([.inf], [-.inf]), NaN ([.nan])
 
     {b String:} Anything else, or explicitly quoted scalars
 
-    When decoding against a specific {!Jsont.t} type, the expected type
-    takes precedence over automatic resolution. For example, decoding
-    ["yes"] against {!Jsont.string} yields the string ["yes"], not [true]. *)
+    When decoding against a specific {!Jsont.t} type, the expected type takes
+    precedence over automatic resolution. For example, decoding ["yes"] against
+    {!Jsont.string} yields the string ["yes"], not [true]. *)

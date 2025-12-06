@@ -32,7 +32,10 @@
  (name test_edge)
  (public_name test_edge)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
-(executable (name test_null_fix) (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_null_fix)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_null_complete)

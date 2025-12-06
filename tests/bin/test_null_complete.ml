@@ -8,13 +8,17 @@ let () =
     |> Object.finish
   in
   (match Yamlt.decode_string codec1 yaml1 with
-   | Ok v -> Printf.printf "Result: %s\n" (match v with None -> "None" | Some s -> "Some(" ^ s ^ ")")
-   | Error e -> Printf.printf "Error: %s\n" e);
+  | Ok v ->
+      Printf.printf "Result: %s\n"
+        (match v with None -> "None" | Some s -> "Some(" ^ s ^ ")")
+  | Error e -> Printf.printf "Error: %s\n" e);
 
   Printf.printf "\n=== Test 2: Jsont.option with YAML string ===\n";
   (match Yamlt.decode_string codec1 "value: hello" with
-   | Ok v -> Printf.printf "Result: %s\n" (match v with None -> "None" | Some s -> "Some(" ^ s ^ ")")
-   | Error e -> Printf.printf "Error: %s\n" e);
+  | Ok v ->
+      Printf.printf "Result: %s\n"
+        (match v with None -> "None" | Some s -> "Some(" ^ s ^ ")")
+  | Error e -> Printf.printf "Error: %s\n" e);
 
   Printf.printf "\n=== Test 3: Jsont.string with YAML null (should error) ===\n";
   let codec2 =
@@ -24,10 +28,10 @@ let () =
     |> Object.finish
   in
   (match Yamlt.decode_string codec2 "value: null" with
-   | Ok v -> Printf.printf "Result: %s\n" v
-   | Error e -> Printf.printf "Error (expected): %s\n" e);
+  | Ok v -> Printf.printf "Result: %s\n" v
+  | Error e -> Printf.printf "Error (expected): %s\n" e);
 
   Printf.printf "\n=== Test 4: Jsont.string with YAML string ===\n";
-  (match Yamlt.decode_string codec2 "value: hello" with
-   | Ok v -> Printf.printf "Result: %s\n" v
-   | Error e -> Printf.printf "Error: %s\n" e)
+  match Yamlt.decode_string codec2 "value: hello" with
+  | Ok v -> Printf.printf "Result: %s\n" v
+  | Error e -> Printf.printf "Error: %s\n" e
