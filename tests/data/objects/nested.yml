@@ -1,0 +1,5 @@
+name: Bob
+address:
+  street: 123 Main St
+  city: Springfield
+  zip: "12345"

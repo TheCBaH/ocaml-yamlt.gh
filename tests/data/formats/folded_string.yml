@@ -1,0 +1,5 @@
+content: >
+  This is a folded string that
+  spans multiple lines but will
+  be folded into a single line
+  with spaces between words

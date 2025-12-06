@@ -1,0 +1,51 @@
+(executable
+ (name test_scalars)
+ (public_name test_scalars)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_objects)
+ (public_name test_objects)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_arrays)
+ (public_name test_arrays)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_formats)
+ (public_name test_formats)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_roundtrip)
+ (public_name test_roundtrip)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_complex)
+ (public_name test_complex)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_edge)
+ (public_name test_edge)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+(executable (name test_null_fix) (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_null_complete)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_opt_array)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_array_variants)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_some_vs_option)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))

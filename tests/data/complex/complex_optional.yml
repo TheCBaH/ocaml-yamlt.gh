@@ -1,0 +1,4 @@
+host: example.com
+port: 443
+ssl: true
+fallback_hosts: [backup1.example.com, backup2.example.com]
