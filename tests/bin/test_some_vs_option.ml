@@ -1,3 +1,5 @@
+open Bytesrw
+
 let () =
   (* Using Jsont.some like opt_mem does *)
   let codec1 =
@@ -11,7 +13,7 @@ let () =
   let yaml = "values: [a, b, c]" in
 
   Printf.printf "Test 1: Jsont.some (Jsont.array) - like opt_mem:\n";
-  (match Yamlt.decode_string codec1 yaml with
+  (match Yamlt.decode codec1 (Bytes.Reader.of_string yaml) with
   | Ok arr -> (
       match arr with
       | None -> Printf.printf "Result: None\n"
@@ -28,7 +30,7 @@ let () =
   in
 
   Printf.printf "\nTest 2: Jsont.option (Jsont.array):\n";
-  match Yamlt.decode_string codec2 yaml with
+  match Yamlt.decode codec2 (Bytes.Reader.of_string yaml) with
   | Ok arr -> (
       match arr with
       | None -> Printf.printf "Result: None\n"

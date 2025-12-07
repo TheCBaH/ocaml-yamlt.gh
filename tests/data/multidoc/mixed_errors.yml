@@ -1,0 +1,9 @@
+---
+name: Alice
+age: 30
+---
+name: Bob
+age: not-a-number
+---
+name: Charlie
+age: 35

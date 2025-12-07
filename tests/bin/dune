@@ -65,3 +65,8 @@
  (name test_locations)
  (public_name test_locations)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
+ (name test_multidoc)
+ (public_name test_multidoc)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))

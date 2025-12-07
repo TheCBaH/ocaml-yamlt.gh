@@ -1,3 +1,5 @@
+open Bytesrw
+
 let () =
   Printf.printf "=== Test 1: Jsont.option with YAML null ===\n";
   let yaml1 = "value: null" in
@@ -7,14 +9,14 @@ let () =
     |> Object.mem "value" (option string) ~enc:(fun v -> v)
     |> Object.finish
   in
-  (match Yamlt.decode_string codec1 yaml1 with
+  (match Yamlt.decode codec1 (Bytes.Reader.of_string yaml1) with
   | Ok v ->
       Printf.printf "Result: %s\n"
         (match v with None -> "None" | Some s -> "Some(" ^ s ^ ")")
   | Error e -> Printf.printf "Error: %s\n" e);
 
   Printf.printf "\n=== Test 2: Jsont.option with YAML string ===\n";
-  (match Yamlt.decode_string codec1 "value: hello" with
+  (match Yamlt.decode codec1 (Bytes.Reader.of_string "value: hello") with
   | Ok v ->
       Printf.printf "Result: %s\n"
         (match v with None -> "None" | Some s -> "Some(" ^ s ^ ")")
@@ -27,11 +29,11 @@ let () =
     |> Object.mem "value" string ~enc:(fun v -> v)
     |> Object.finish
   in
-  (match Yamlt.decode_string codec2 "value: null" with
+  (match Yamlt.decode codec2 (Bytes.Reader.of_string "value: null") with
   | Ok v -> Printf.printf "Result: %s\n" v
   | Error e -> Printf.printf "Error (expected): %s\n" e);
 
   Printf.printf "\n=== Test 4: Jsont.string with YAML string ===\n";
-  match Yamlt.decode_string codec2 "value: hello" with
+  match Yamlt.decode codec2 (Bytes.Reader.of_string "value: hello") with
   | Ok v -> Printf.printf "Result: %s\n" v
   | Error e -> Printf.printf "Error: %s\n" e

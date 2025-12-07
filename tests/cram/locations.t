@@ -25,7 +25,7 @@ Basic type error with and without locs
   === With locs=true ===
   Error message:
   String "not-a-number" does not parse to OCaml int value
-  File "-", lines 2-3, characters 5-0:
+  File "-", line 2, characters 5-18:
   File "-", line 2, characters 0-3: in member age of
   File "-", line 1, characters 0-1: Person object
 
@@ -51,7 +51,7 @@ Error in nested object field
   === With locs=true ===
   Nested error:
   String "invalid-zip" does not parse to OCaml int value
-  File "-", lines 5-6, characters 7-0:
+  File "-", line 5, characters 7-19:
   File "-", line 5, characters 2-5: in member zip of
   File "-", line 3, characters 2-3: Address object
   File "-", line 2, characters 0-7: in member address of
@@ -94,14 +94,14 @@ The `file` parameter sets the file path shown in error messages.
   === Without file path ===
   Error:
   String "not-a-number" does not parse to OCaml int value
-  File "-", lines 2-3, characters 5-0:
+  File "-", line 2, characters 5-18:
   File "-", line 2, characters 0-3: in member age of
   File "-", line 1, characters 0-1: Person object
   
   === With file path ===
   Error:
   String "not-a-number" does not parse to OCaml int value
-  File "test.yml", lines 2-3, characters 5-0:
+  File "test.yml", line 2, characters 5-18:
   File "test.yml", line 2, characters 0-3: in member age of
   File "test.yml", line 1, characters 0-1: Person object
 

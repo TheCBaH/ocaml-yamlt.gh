@@ -5,6 +5,8 @@
 
 (** Test edge cases with Yamlt *)
 
+open Bytesrw
+
 (* Helper to read file *)
 let read_file path =
   let ic = open_in path in
@@ -50,7 +52,7 @@ let test_large_numbers file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
-  let yaml_result = Yamlt.decode_string M.numbers_codec yaml in
+  let yaml_result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "large_numbers"
     (Result.map M.show json_result)
@@ -75,7 +77,7 @@ let test_special_chars file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.text_codec json in
-  let yaml_result = Yamlt.decode_string M.text_codec yaml in
+  let yaml_result = Yamlt.decode M.text_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "special_chars"
     (Result.map M.show json_result)
@@ -100,7 +102,7 @@ let test_unicode file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.text_codec json in
-  let yaml_result = Yamlt.decode_string M.text_codec yaml in
+  let yaml_result = Yamlt.decode M.text_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "unicode"
     (Result.map M.show json_result)
@@ -129,7 +131,7 @@ let test_empty_collections file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.data_codec json in
-  let yaml_result = Yamlt.decode_string M.data_codec yaml in
+  let yaml_result = Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "empty_collections"
     (Result.map M.show json_result)
@@ -147,7 +149,7 @@ let test_special_keys file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string (Jsont.any ()) json in
-  let yaml_result = Yamlt.decode_string (Jsont.any ()) yaml in
+  let yaml_result = Yamlt.decode (Jsont.any ()) (Bytes.Reader.of_string yaml) in
 
   show_result_both "special_keys"
     (Result.map M.show json_result)
@@ -172,7 +174,7 @@ let test_single_element file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.data_codec json in
-  let yaml_result = Yamlt.decode_string M.data_codec yaml in
+  let yaml_result = Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "single_element"
     (Result.map M.show json_result)

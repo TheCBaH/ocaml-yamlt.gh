@@ -5,6 +5,8 @@
 
 (** Test roundtrip encoding/decoding with Yamlt *)
 
+open Bytesrw
+
 (* Test: Roundtrip scalars *)
 let test_scalar_roundtrip () =
   let module M = struct
@@ -36,10 +38,15 @@ let test_scalar_roundtrip () =
 
   (* YAML Block roundtrip *)
   let yaml_block_encoded =
-    Yamlt.encode_string ~format:Yamlt.Block M.data_codec original
+    let b = Buffer.create 256 in
+    let writer = Bytes.Writer.of_buffer b in
+    match Yamlt.encode ~format:Yamlt.Block M.data_codec original ~eod:true writer with
+    | Ok () -> Ok (Buffer.contents b)
+    | Error e -> Error e
   in
   let yaml_block_decoded =
-    Result.bind yaml_block_encoded (Yamlt.decode_string M.data_codec)
+    Result.bind yaml_block_encoded (fun yaml ->
+      Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml))
   in
   (match yaml_block_decoded with
   | Ok decoded when M.equal original decoded ->
@@ -49,10 +56,15 @@ let test_scalar_roundtrip () =
 
   (* YAML Flow roundtrip *)
   let yaml_flow_encoded =
-    Yamlt.encode_string ~format:Yamlt.Flow M.data_codec original
+    let b = Buffer.create 256 in
+    let writer = Bytes.Writer.of_buffer b in
+    match Yamlt.encode ~format:Yamlt.Flow M.data_codec original ~eod:true writer with
+    | Ok () -> Ok (Buffer.contents b)
+    | Error e -> Error e
   in
   let yaml_flow_decoded =
-    Result.bind yaml_flow_encoded (Yamlt.decode_string M.data_codec)
+    Result.bind yaml_flow_encoded (fun yaml ->
+      Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml))
   in
   match yaml_flow_decoded with
   | Ok decoded when M.equal original decoded ->
@@ -97,9 +109,13 @@ let test_array_roundtrip () =
 
   (* YAML roundtrip *)
   let yaml_result =
-    Result.bind
-      (Yamlt.encode_string M.data_codec original)
-      (Yamlt.decode_string M.data_codec)
+    let b = Buffer.create 256 in
+    let writer = Bytes.Writer.of_buffer b in
+    match Yamlt.encode M.data_codec original ~eod:true writer with
+    | Ok () ->
+        let yaml = Buffer.contents b in
+        Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml)
+    | Error e -> Error e
   in
   match yaml_result with
   | Ok decoded when M.equal original decoded ->
@@ -162,9 +178,13 @@ let test_object_roundtrip () =
 
   (* YAML roundtrip *)
   let yaml_result =
-    Result.bind
-      (Yamlt.encode_string M.company_codec original)
-      (Yamlt.decode_string M.company_codec)
+    let b = Buffer.create 256 in
+    let writer = Bytes.Writer.of_buffer b in
+    match Yamlt.encode M.company_codec original ~eod:true writer with
+    | Ok () ->
+        let yaml = Buffer.contents b in
+        Yamlt.decode M.company_codec (Bytes.Reader.of_string yaml)
+    | Error e -> Error e
   in
   match yaml_result with
   | Ok decoded when M.equal original decoded ->
@@ -210,9 +230,13 @@ let test_optional_roundtrip () =
 
   (* YAML roundtrip *)
   let yaml_result =
-    Result.bind
-      (Yamlt.encode_string M.data_codec original)
-      (Yamlt.decode_string M.data_codec)
+    let b = Buffer.create 256 in
+    let writer = Bytes.Writer.of_buffer b in
+    match Yamlt.encode M.data_codec original ~eod:true writer with
+    | Ok () ->
+        let yaml = Buffer.contents b in
+        Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml)
+    | Error e -> Error e
   in
   match yaml_result with
   | Ok decoded when M.equal original decoded ->

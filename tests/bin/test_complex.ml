@@ -5,6 +5,8 @@
 
 (** Test complex nested types with Yamlt *)
 
+open Bytesrw
+
 (* Helper to read file *)
 let read_file path =
   let ic = open_in path in
@@ -57,7 +59,7 @@ let test_deep_nesting file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.root_codec json in
-  let yaml_result = Yamlt.decode_string M.root_codec yaml in
+  let yaml_result = Yamlt.decode M.root_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "deep_nesting"
     (Result.map M.show json_result)
@@ -96,7 +98,7 @@ let test_mixed_structure file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.collection_codec json in
-  let yaml_result = Yamlt.decode_string M.collection_codec yaml in
+  let yaml_result = Yamlt.decode M.collection_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "mixed_structure"
     (Result.map M.show json_result)
@@ -144,7 +146,7 @@ let test_complex_optional file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.config_codec json in
-  let yaml_result = Yamlt.decode_string M.config_codec yaml in
+  let yaml_result = Yamlt.decode M.config_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "complex_optional"
     (Result.map M.show json_result)
@@ -167,7 +169,7 @@ let test_heterogeneous file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.data_codec json in
-  let yaml_result = Yamlt.decode_string M.data_codec yaml in
+  let yaml_result = Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "heterogeneous"
     (Result.map M.show json_result)

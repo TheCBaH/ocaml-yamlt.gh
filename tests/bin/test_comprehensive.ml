@@ -1,3 +1,5 @@
+open Bytesrw
+
 let () =
   (* Test 1: Null handling with option types *)
   Printf.printf "=== NULL HANDLING ===\n";
@@ -7,11 +9,11 @@ let () =
     |> Jsont.Object.finish
   in
 
-  (match Yamlt.decode_string opt_codec "value: null" with
+  (match Yamlt.decode opt_codec (Bytes.Reader.of_string "value: null") with
   | Ok None -> Printf.printf "✓ Plain 'null' with option codec: None\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode_string opt_codec "value: hello" with
+  (match Yamlt.decode opt_codec (Bytes.Reader.of_string "value: hello") with
   | Ok (Some "hello") ->
       Printf.printf "✓ Plain 'hello' with option codec: Some(hello)\n"
   | _ -> Printf.printf "✗ FAIL\n");
@@ -22,16 +24,16 @@ let () =
     |> Jsont.Object.finish
   in
 
-  (match Yamlt.decode_string string_codec "value: null" with
+  (match Yamlt.decode string_codec (Bytes.Reader.of_string "value: null") with
   | Error _ ->
       Printf.printf "✓ Plain 'null' with string codec: ERROR (expected)\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode_string string_codec "value: \"\"" with
+  (match Yamlt.decode string_codec (Bytes.Reader.of_string "value: \"\"") with
   | Ok "" -> Printf.printf "✓ Quoted empty string: \"\"\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode_string string_codec "value: \"null\"" with
+  (match Yamlt.decode string_codec (Bytes.Reader.of_string "value: \"null\"") with
   | Ok "null" -> Printf.printf "✓ Quoted 'null': \"null\"\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
@@ -43,15 +45,15 @@ let () =
     |> Jsont.Object.finish
   in
 
-  (match Yamlt.decode_string num_codec "value: 0xFF" with
+  (match Yamlt.decode num_codec (Bytes.Reader.of_string "value: 0xFF") with
   | Ok 255. -> Printf.printf "✓ Hex 0xFF: 255\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode_string num_codec "value: 0o77" with
+  (match Yamlt.decode num_codec (Bytes.Reader.of_string "value: 0o77") with
   | Ok 63. -> Printf.printf "✓ Octal 0o77: 63\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode_string num_codec "value: 0b1010" with
+  (match Yamlt.decode num_codec (Bytes.Reader.of_string "value: 0b1010") with
   | Ok 10. -> Printf.printf "✓ Binary 0b1010: 10\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
@@ -64,12 +66,12 @@ let () =
     |> Jsont.Object.finish
   in
 
-  (match Yamlt.decode_string opt_array_codec "values: [a, b, c]" with
+  (match Yamlt.decode opt_array_codec (Bytes.Reader.of_string "values: [a, b, c]") with
   | Ok (Some arr) when Array.length arr = 3 ->
       Printf.printf "✓ Optional array [a, b, c]: Some([3 items])\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode_string opt_array_codec "{}" with
+  (match Yamlt.decode opt_array_codec (Bytes.Reader.of_string "{}") with
   | Ok None -> Printf.printf "✓ Missing optional array: None\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
@@ -82,11 +84,13 @@ let () =
     |> Jsont.Object.finish
   in
 
+  let b = Buffer.create 256 in
+  let writer = Bytes.Writer.of_buffer b in
   match
-    Yamlt.encode_string ~format:Flow encode_codec ("test", [| 1.; 2.; 3. |])
+    Yamlt.encode ~format:Flow encode_codec ("test", [| 1.; 2.; 3. |]) ~eod:true writer
   with
-  | Ok yaml_flow
-    when String.equal yaml_flow "{name: test, values: [1.0, 2.0, 3.0]}\n" ->
+  | Ok ()
+    when String.equal (Buffer.contents b) "{name: test, values: [1.0, 2.0, 3.0]}\n" ->
       Printf.printf "✓ Flow encoding with comma separator\n"
-  | Ok yaml_flow -> Printf.printf "✗ FAIL: %S\n" yaml_flow
+  | Ok () -> Printf.printf "✗ FAIL: %S\n" (Buffer.contents b)
   | Error e -> Printf.printf "✗ ERROR: %s\n" e

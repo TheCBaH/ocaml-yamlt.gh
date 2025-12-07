@@ -71,28 +71,30 @@ val decode' :
   ('a, Jsont.Error.t) result
 (** [decode'] is like {!val-decode} but preserves the error structure. *)
 
-val decode_string :
+val decode_all :
   ?layout:bool ->
   ?locs:bool ->
   ?file:Jsont.Textloc.fpath ->
   ?max_depth:int ->
   ?max_nodes:int ->
   'a Jsont.t ->
-  string ->
-  ('a, string) result
-(** [decode_string] is like {!val-decode} but decodes directly from a string. *)
+  Bytes.Reader.t ->
+  ('a, string) result Seq.t
+(** [decode_all t r] decodes all documents from a multi-document YAML stream.
+    Returns a sequence where each element is a result of decoding one document.
+    Parameters are as in {!val-decode}. Use this for YAML streams containing
+    multiple documents separated by [---]. *)
 
-val decode_string' :
+val decode_all' :
   ?layout:bool ->
   ?locs:bool ->
   ?file:Jsont.Textloc.fpath ->
   ?max_depth:int ->
   ?max_nodes:int ->
   'a Jsont.t ->
-  string ->
-  ('a, Jsont.Error.t) result
-(** [decode_string'] is like {!val-decode'} but decodes directly from a string.
-*)
+  Bytes.Reader.t ->
+  ('a, Jsont.Error.t) result Seq.t
+(** [decode_all'] is like {!val-decode_all} but preserves the error structure. *)
 
 (** {1:encode Encode} *)
 
@@ -138,28 +140,6 @@ val encode' :
   (unit, Jsont.Error.t) result
 (** [encode'] is like {!val-encode} but preserves the error structure. *)
 
-val encode_string :
-  ?buf:Stdlib.Bytes.t ->
-  ?format:yaml_format ->
-  ?indent:int ->
-  ?explicit_doc:bool ->
-  ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t ->
-  'a ->
-  (string, string) result
-(** [encode_string] is like {!val-encode} but writes to a string. *)
-
-val encode_string' :
-  ?buf:Stdlib.Bytes.t ->
-  ?format:yaml_format ->
-  ?indent:int ->
-  ?explicit_doc:bool ->
-  ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t ->
-  'a ->
-  (string, Jsont.Error.t) result
-(** [encode_string'] is like {!val-encode'} but writes to a string. *)
-
 (** {1:recode Recode}
 
     The defaults in these functions are those of {!val-decode} and
@@ -183,22 +163,6 @@ val recode :
   eod:bool ->
   (unit, string) result
 (** [recode t r w] is {!val-decode} followed by {!val-encode}. *)
-
-val recode_string :
-  ?layout:bool ->
-  ?locs:bool ->
-  ?file:Jsont.Textloc.fpath ->
-  ?max_depth:int ->
-  ?max_nodes:int ->
-  ?buf:Stdlib.Bytes.t ->
-  ?format:yaml_format ->
-  ?indent:int ->
-  ?explicit_doc:bool ->
-  ?scalar_style:Yamlrw.Scalar_style.t ->
-  'a Jsont.t ->
-  string ->
-  (string, string) result
-(** [recode_string] is like {!val-recode} but operates on strings. *)
 
 (** {1:yaml_mapping YAML to JSON Mapping}
 

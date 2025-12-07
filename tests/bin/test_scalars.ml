@@ -5,6 +5,8 @@
 
 (** Test scalar type resolution with Yamlt codec *)
 
+open Bytesrw
+
 (* Helper to read file *)
 let read_file path =
   let ic = open_in path in
@@ -36,7 +38,7 @@ let test_null_resolution file =
   in
 
   (* Try decoding as null *)
-  let result = Yamlt.decode_string null_codec yaml in
+  let result = Yamlt.decode null_codec (Bytes.Reader.of_string yaml) in
   show_result "null_codec" (Result.map (fun () -> "null") result)
 
 (* Test: Boolean type-directed resolution *)
@@ -60,14 +62,14 @@ let test_bool_resolution file =
 
   Printf.printf "=== Bool Codec ===\n";
   let json_result = Jsont_bytesrw.decode_string bool_codec json in
-  let yaml_result = Yamlt.decode_string bool_codec yaml in
+  let yaml_result = Yamlt.decode bool_codec (Bytes.Reader.of_string yaml) in
   show_result_json "bool_codec"
     (Result.map (Printf.sprintf "%b") json_result)
     (Result.map (Printf.sprintf "%b") yaml_result);
 
   Printf.printf "\n=== String Codec ===\n";
   let json_result = Jsont_bytesrw.decode_string string_codec json in
-  let yaml_result = Yamlt.decode_string string_codec yaml in
+  let yaml_result = Yamlt.decode string_codec (Bytes.Reader.of_string yaml) in
   show_result_json "string_codec"
     (Result.map (Printf.sprintf "%S") json_result)
     (Result.map (Printf.sprintf "%S") yaml_result)
@@ -84,7 +86,7 @@ let test_number_resolution file =
   in
 
   let json_result = Jsont_bytesrw.decode_string number_codec json in
-  let yaml_result = Yamlt.decode_string number_codec yaml in
+  let yaml_result = Yamlt.decode number_codec (Bytes.Reader.of_string yaml) in
 
   show_result_json "number_codec"
     (Result.map (Printf.sprintf "%.17g") json_result)
@@ -102,7 +104,7 @@ let test_string_resolution file =
   in
 
   let json_result = Jsont_bytesrw.decode_string string_codec json in
-  let yaml_result = Yamlt.decode_string string_codec yaml in
+  let yaml_result = Yamlt.decode string_codec (Bytes.Reader.of_string yaml) in
 
   show_result_json "string_codec"
     (Result.map (Printf.sprintf "%S") json_result)
@@ -118,7 +120,7 @@ let test_special_floats file =
     |> Jsont.Object.finish
   in
 
-  let result = Yamlt.decode_string number_codec yaml in
+  let result = Yamlt.decode number_codec (Bytes.Reader.of_string yaml) in
   match result with
   | Ok f ->
       if Float.is_nan f then Printf.printf "value: NaN\n"
@@ -138,7 +140,7 @@ let test_type_mismatch file expected_type =
         |> Jsont.Object.mem "value" Jsont.bool ~enc:(fun b -> b)
         |> Jsont.Object.finish
       in
-      let result = Yamlt.decode_string codec yaml in
+      let result = Yamlt.decode codec (Bytes.Reader.of_string yaml) in
       match result with
       | Ok _ -> Printf.printf "Unexpected success\n"
       | Error e -> Printf.printf "Expected error: %s\n" e)
@@ -148,7 +150,7 @@ let test_type_mismatch file expected_type =
         |> Jsont.Object.mem "value" Jsont.number ~enc:(fun n -> n)
         |> Jsont.Object.finish
       in
-      let result = Yamlt.decode_string codec yaml in
+      let result = Yamlt.decode codec (Bytes.Reader.of_string yaml) in
       match result with
       | Ok _ -> Printf.printf "Unexpected success\n"
       | Error e -> Printf.printf "Expected error: %s\n" e)
@@ -158,7 +160,7 @@ let test_type_mismatch file expected_type =
         |> Jsont.Object.mem "value" (Jsont.null ()) ~enc:(fun n -> n)
         |> Jsont.Object.finish
       in
-      let result = Yamlt.decode_string codec yaml in
+      let result = Yamlt.decode codec (Bytes.Reader.of_string yaml) in
       match result with
       | Ok _ -> Printf.printf "Unexpected success\n"
       | Error e -> Printf.printf "Expected error: %s\n" e)
@@ -176,7 +178,7 @@ let test_any_resolution file =
   in
 
   let json_result = Jsont_bytesrw.decode_string any_codec json in
-  let yaml_result = Yamlt.decode_string any_codec yaml in
+  let yaml_result = Yamlt.decode any_codec (Bytes.Reader.of_string yaml) in
 
   (* Just show that it decoded successfully *)
   show_result_json "any_codec"
@@ -196,11 +198,15 @@ let test_encode_formats value_type value =
       (match Jsont_bytesrw.encode_string codec v with
       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-      | Ok s -> Printf.printf "YAML Block:\n%s" s
-      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-      | Ok s -> Printf.printf "YAML Flow: %s" s
+      (let b = Buffer.create 256 in
+       let writer = Bytes.Writer.of_buffer b in
+       match Yamlt.encode ~format:Yamlt.Block codec v ~eod:true writer with
+       | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
+       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      let b = Buffer.create 256 in
+      let writer = Bytes.Writer.of_buffer b in
+      match Yamlt.encode ~format:Yamlt.Flow codec v ~eod:true writer with
+      | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
   | "number" -> (
       let codec =
@@ -212,11 +218,15 @@ let test_encode_formats value_type value =
       (match Jsont_bytesrw.encode_string codec v with
       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-      | Ok s -> Printf.printf "YAML Block:\n%s" s
-      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-      | Ok s -> Printf.printf "YAML Flow: %s" s
+      (let b = Buffer.create 256 in
+       let writer = Bytes.Writer.of_buffer b in
+       match Yamlt.encode ~format:Yamlt.Block codec v ~eod:true writer with
+       | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
+       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      let b = Buffer.create 256 in
+      let writer = Bytes.Writer.of_buffer b in
+      match Yamlt.encode ~format:Yamlt.Flow codec v ~eod:true writer with
+      | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
   | "string" -> (
       let codec =
@@ -228,11 +238,15 @@ let test_encode_formats value_type value =
       (match Jsont_bytesrw.encode_string codec v with
       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-      | Ok s -> Printf.printf "YAML Block:\n%s" s
-      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-      | Ok s -> Printf.printf "YAML Flow: %s" s
+      (let b = Buffer.create 256 in
+       let writer = Bytes.Writer.of_buffer b in
+       match Yamlt.encode ~format:Yamlt.Block codec v ~eod:true writer with
+       | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
+       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      let b = Buffer.create 256 in
+      let writer = Bytes.Writer.of_buffer b in
+      match Yamlt.encode ~format:Yamlt.Flow codec v ~eod:true writer with
+      | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
   | "null" -> (
       let codec =
@@ -244,11 +258,15 @@ let test_encode_formats value_type value =
       (match Jsont_bytesrw.encode_string codec v with
       | Ok s -> Printf.printf "JSON: %s\n" (String.trim s)
       | Error e -> Printf.printf "JSON ERROR: %s\n" e);
-      (match Yamlt.encode_string ~format:Yamlt.Block codec v with
-      | Ok s -> Printf.printf "YAML Block:\n%s" s
-      | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
-      match Yamlt.encode_string ~format:Yamlt.Flow codec v with
-      | Ok s -> Printf.printf "YAML Flow: %s" s
+      (let b = Buffer.create 256 in
+       let writer = Bytes.Writer.of_buffer b in
+       match Yamlt.encode ~format:Yamlt.Block codec v ~eod:true writer with
+       | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
+       | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+      let b = Buffer.create 256 in
+      let writer = Bytes.Writer.of_buffer b in
+      match Yamlt.encode ~format:Yamlt.Flow codec v ~eod:true writer with
+      | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
       | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e)
   | _ -> failwith "unknown type"
 

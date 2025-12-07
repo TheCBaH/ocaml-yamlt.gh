@@ -3,7 +3,6 @@
   SPDX-License-Identifier: ISC
  ---------------------------------------------------------------------------*)
 
-open Bytesrw
 open Jsont.Repr
 open Yamlrw
 
@@ -65,8 +64,33 @@ let meta_of_span d span =
     let first_line =
       (start.Position.line, start.Position.index - start.Position.column + 1)
     in
+    (* Handle case where stop is at the start of a new line (column 1)
+       This happens when the span includes a trailing newline.
+       The last_byte is on the previous line, so we need to calculate
+       the line start position based on last_byte, not stop. *)
     let last_line =
-      (stop.Position.line, stop.Position.index - stop.Position.column + 1)
+      if stop.Position.column = 1 && stop.Position.line > start.Position.line then
+        (* last_byte is on the previous line (stop.line - 1)
+           We need to estimate where that line starts. Since we don't have
+           the full text, we can't calculate it exactly, but we can use:
+           last_byte - (estimated_column - 1)
+           For now, we'll use the same line as start if they're close,
+           or just report it as the previous line. *)
+        let last_line_num = stop.Position.line - 1 in
+        (* Estimate: assume last_byte is somewhere on the previous line.
+           We'll use the byte position minus a reasonable offset.
+           This is approximate but better than wrapping to the next line. *)
+        if last_line_num = start.Position.line then
+          (* Same line as start - use start's line position *)
+          first_line
+        else
+          (* Different line - estimate line start as last_byte minus some offset
+             Since we subtracted 1 from stop.index to get last_byte, and stop.column was 1,
+             last_byte should be the newline character on the previous line.
+             The line likely started much earlier, but we'll estimate conservatively. *)
+          (last_line_num, last_byte)
+      else
+        (stop.Position.line, stop.Position.index - stop.Position.column + 1)
     in
     let textloc =
       Jsont.Textloc.make ~file:d.file ~first_byte ~last_byte ~first_line
@@ -656,7 +680,66 @@ let skip_end_wrappers d =
   in
   loop ()
 
+(* Skip to the end of the current document after an error *)
+let skip_to_document_end d =
+  let rec loop depth =
+    match peek_event d with
+    | None -> ()
+    | Some { Event.event = Event.Stream_end; _ } -> ()
+    | Some { Event.event = Event.Document_end _; _ } ->
+        skip_event d;
+        if depth = 0 then () else loop (depth - 1)
+    | Some { Event.event = Event.Document_start _; _ } ->
+        skip_event d;
+        loop (depth + 1)
+    | Some _ ->
+        skip_event d;
+        loop depth
+  in
+  loop 0
+
 (* Public decode API *)
+
+(* Decode all documents from a multi-document YAML stream *)
+let decode_all' ?(layout = false) ?(locs = false) ?(file = "-")
+    ?(max_depth = 100) ?(max_nodes = 10_000_000) t reader =
+  let parser = Parser.of_reader reader in
+  let d = make_decoder ~layout ~locs ~file ~max_depth ~max_nodes parser in
+  let t' = Jsont.Repr.of_t t in
+  let rec next_doc () =
+    match peek_event d with
+    | None -> Seq.Nil
+    | Some { Event.event = Event.Stream_end; _ } ->
+        skip_event d;
+        Seq.Nil
+    | Some _ -> (
+        try
+          skip_to_content d;
+          (* Reset node count for each document *)
+          d.node_count <- 0;
+          let v = decode d ~nest:0 t' in
+          (* Skip document end marker if present *)
+          (match peek_event d with
+          | Some { Event.event = Event.Document_end _; _ } -> skip_event d
+          | _ -> ());
+          Seq.Cons (Ok v, next_doc)
+        with
+        | Jsont.Error e ->
+            skip_to_document_end d;
+            Seq.Cons (Error e, next_doc)
+        | Error.Yamlrw_error err ->
+            skip_to_document_end d;
+            let msg = Error.to_string err in
+            let e =
+              Jsont.Error.make_msg Jsont.Error.Context.empty Jsont.Meta.none msg
+            in
+            Seq.Cons (Error e, next_doc))
+  in
+  next_doc
+
+let decode_all ?layout ?locs ?file ?max_depth ?max_nodes t reader =
+  decode_all' ?layout ?locs ?file ?max_depth ?max_nodes t reader
+  |> Seq.map (Result.map_error Jsont.Error.to_string)
 
 let decode' ?layout ?locs ?file ?max_depth ?max_nodes t reader =
   let parser = Parser.of_reader reader in
@@ -676,12 +759,6 @@ let decode' ?layout ?locs ?file ?max_depth ?max_nodes t reader =
 let decode ?layout ?locs ?file ?max_depth ?max_nodes t reader =
   Result.map_error Jsont.Error.to_string
     (decode' ?layout ?locs ?file ?max_depth ?max_nodes t reader)
-
-let decode_string' ?layout ?locs ?file ?max_depth ?max_nodes t s =
-  decode' ?layout ?locs ?file ?max_depth ?max_nodes t (Bytes.Reader.of_string s)
-
-let decode_string ?layout ?locs ?file ?max_depth ?max_nodes t s =
-  decode ?layout ?locs ?file ?max_depth ?max_nodes t (Bytes.Reader.of_string s)
 
 (* Encoder *)
 
@@ -908,20 +985,6 @@ let encode ?buf ?format ?indent ?explicit_doc ?scalar_style t v ~eod writer =
   Result.map_error Jsont.Error.to_string
     (encode' ?buf ?format ?indent ?explicit_doc ?scalar_style t v ~eod writer)
 
-let encode_string' ?buf ?format ?indent ?explicit_doc ?scalar_style t v =
-  let b = Buffer.create 256 in
-  let writer = Bytes.Writer.of_buffer b in
-  match
-    encode' ?buf ?format ?indent ?explicit_doc ?scalar_style t v ~eod:true
-      writer
-  with
-  | Ok () -> Ok (Buffer.contents b)
-  | Error e -> Error e
-
-let encode_string ?buf ?format ?indent ?explicit_doc ?scalar_style t v =
-  Result.map_error Jsont.Error.to_string
-    (encode_string' ?buf ?format ?indent ?explicit_doc ?scalar_style t v)
-
 (* Recode *)
 
 let recode ?layout ?locs ?file ?max_depth ?max_nodes ?buf ?format ?indent
@@ -935,16 +998,4 @@ let recode ?layout ?locs ?file ?max_depth ?max_nodes ?buf ?format ?indent
   match decode' ?layout ?locs ?file ?max_depth ?max_nodes t reader with
   | Ok v ->
       encode ?buf ?format ?indent ?explicit_doc ?scalar_style t v ~eod writer
-  | Error e -> Error (Jsont.Error.to_string e)
-
-let recode_string ?layout ?locs ?file ?max_depth ?max_nodes ?buf ?format ?indent
-    ?explicit_doc ?scalar_style t s =
-  let format =
-    match (layout, format) with Some true, None -> Some Layout | _, f -> f
-  in
-  let layout =
-    match (layout, format) with None, Some Layout -> Some true | l, _ -> l
-  in
-  match decode_string' ?layout ?locs ?file ?max_depth ?max_nodes t s with
-  | Ok v -> encode_string ?buf ?format ?indent ?explicit_doc ?scalar_style t v
   | Error e -> Error (Jsont.Error.to_string e)

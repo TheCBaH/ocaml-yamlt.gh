@@ -1,4 +1,4 @@
-open Jsont
+open Bytesrw
 
 let () =
   let module M = struct
@@ -14,7 +14,7 @@ let () =
 
   Printf.printf "Testing YAML null handling with Jsont.option Jsont.string:\n\n";
 
-  match Yamlt.decode_string M.data_codec yaml_null with
+  match Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml_null) with
   | Ok data -> (
       match data.M.value with
       | None -> Printf.printf "YAML: value=None (CORRECT)\n"

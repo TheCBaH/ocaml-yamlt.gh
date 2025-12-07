@@ -5,6 +5,8 @@
 
 (** Test array codec functionality with Yamlt *)
 
+open Bytesrw
+
 (* Helper to read file *)
 let read_file path =
   let ic = open_in path in
@@ -42,7 +44,7 @@ let test_int_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
-  let yaml_result = Yamlt.decode_string M.numbers_codec yaml in
+  let yaml_result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "int_array"
     (Result.map M.show json_result)
@@ -67,7 +69,7 @@ let test_string_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.tags_codec json in
-  let yaml_result = Yamlt.decode_string M.tags_codec yaml in
+  let yaml_result = Yamlt.decode M.tags_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "string_array"
     (Result.map M.show json_result)
@@ -92,7 +94,7 @@ let test_float_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.measurements_codec json in
-  let yaml_result = Yamlt.decode_string M.measurements_codec yaml in
+  let yaml_result = Yamlt.decode M.measurements_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "float_array"
     (Result.map M.show json_result)
@@ -114,7 +116,7 @@ let test_empty_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.empty_codec json in
-  let yaml_result = Yamlt.decode_string M.empty_codec yaml in
+  let yaml_result = Yamlt.decode M.empty_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "empty_array"
     (Result.map M.show json_result)
@@ -147,7 +149,7 @@ let test_object_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.people_codec json in
-  let yaml_result = Yamlt.decode_string M.people_codec yaml in
+  let yaml_result = Yamlt.decode M.people_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "object_array"
     (Result.map M.show json_result)
@@ -176,7 +178,7 @@ let test_nested_arrays file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.matrix_codec json in
-  let yaml_result = Yamlt.decode_string M.matrix_codec yaml in
+  let yaml_result = Yamlt.decode M.matrix_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "nested_arrays"
     (Result.map M.show json_result)
@@ -194,7 +196,7 @@ let test_type_mismatch file =
       |> Jsont.Object.finish
   end in
   let yaml = read_file file in
-  let result = Yamlt.decode_string M.numbers_codec yaml in
+  let result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
   match result with
   | Ok _ -> Printf.printf "Unexpected success\n"
   | Error e -> Printf.printf "Expected error: %s\n" e
@@ -217,7 +219,7 @@ let test_bool_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.flags_codec json in
-  let yaml_result = Yamlt.decode_string M.flags_codec yaml in
+  let yaml_result = Yamlt.decode M.flags_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "bool_array"
     (Result.map M.show json_result)
@@ -244,7 +246,7 @@ let test_nullable_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.nullable_codec json in
-  let yaml_result = Yamlt.decode_string M.nullable_codec yaml in
+  let yaml_result = Yamlt.decode M.nullable_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "nullable_array"
     (Result.map M.show json_result)
@@ -274,13 +276,17 @@ let test_encode_arrays () =
   | Error e -> Printf.printf "JSON ERROR: %s\n" e);
 
   (* Encode to YAML Block *)
-  (match Yamlt.encode_string ~format:Yamlt.Block M.data_codec data with
-  | Ok s -> Printf.printf "YAML Block:\n%s" s
-  | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+  (let b = Buffer.create 256 in
+   let writer = Bytes.Writer.of_buffer b in
+   match Yamlt.encode ~format:Yamlt.Block M.data_codec data ~eod:true writer with
+   | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
+   | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
 
   (* Encode to YAML Flow *)
-  match Yamlt.encode_string ~format:Yamlt.Flow M.data_codec data with
-  | Ok s -> Printf.printf "YAML Flow: %s" s
+  let b = Buffer.create 256 in
+  let writer = Bytes.Writer.of_buffer b in
+  match Yamlt.encode ~format:Yamlt.Flow M.data_codec data ~eod:true writer with
+  | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
   | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e
 
 let () =

@@ -5,6 +5,8 @@
 
 (** Test format-specific features with Yamlt *)
 
+open Bytesrw
+
 (* Helper to read file *)
 let read_file path =
   let ic = open_in path in
@@ -42,7 +44,7 @@ let test_literal_string file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.text_codec json in
-  let yaml_result = Yamlt.decode_string M.text_codec yaml in
+  let yaml_result = Yamlt.decode M.text_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "literal_string"
     (Result.map M.show json_result)
@@ -68,7 +70,7 @@ let test_folded_string file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.text_codec json in
-  let yaml_result = Yamlt.decode_string M.text_codec yaml in
+  let yaml_result = Yamlt.decode M.text_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "folded_string"
     (Result.map M.show json_result)
@@ -93,7 +95,7 @@ let test_number_formats file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
-  let yaml_result = Yamlt.decode_string M.numbers_codec yaml in
+  let yaml_result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "number_formats"
     (Result.map M.show json_result)
@@ -129,13 +131,17 @@ let test_encode_styles () =
   in
 
   (* Encode to YAML Block style *)
-  (match Yamlt.encode_string ~format:Yamlt.Block M.data_codec data with
-  | Ok s -> Printf.printf "YAML Block:\n%s\n" s
-  | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
+  (let b = Buffer.create 256 in
+   let writer = Bytes.Writer.of_buffer b in
+   match Yamlt.encode ~format:Yamlt.Block M.data_codec data ~eod:true writer with
+   | Ok () -> Printf.printf "YAML Block:\n%s\n" (Buffer.contents b)
+   | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
 
   (* Encode to YAML Flow style *)
-  match Yamlt.encode_string ~format:Yamlt.Flow M.data_codec data with
-  | Ok s -> Printf.printf "YAML Flow:\n%s\n" s
+  let b = Buffer.create 256 in
+  let writer = Bytes.Writer.of_buffer b in
+  match Yamlt.encode ~format:Yamlt.Flow M.data_codec data ~eod:true writer with
+  | Ok () -> Printf.printf "YAML Flow:\n%s\n" (Buffer.contents b)
   | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e
 
 (* Test: Comments in YAML (should be ignored) *)
@@ -155,7 +161,7 @@ let test_comments file =
       Printf.sprintf "host=%S, port=%d, debug=%b" c.host c.port c.debug
   end in
   let yaml = read_file file in
-  let yaml_result = Yamlt.decode_string M.config_codec yaml in
+  let yaml_result = Yamlt.decode M.config_codec (Bytes.Reader.of_string yaml) in
 
   match yaml_result with
   | Ok v -> Printf.printf "YAML (with comments): %s\n" (M.show v)
@@ -180,7 +186,7 @@ let test_empty_document file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.wrapper_codec json in
-  let yaml_result = Yamlt.decode_string M.wrapper_codec yaml in
+  let yaml_result = Yamlt.decode M.wrapper_codec (Bytes.Reader.of_string yaml) in
 
   show_result_both "empty_document"
     (Result.map M.show json_result)
@@ -199,7 +205,7 @@ let test_explicit_tags file =
     let show v = Printf.sprintf "data=%S" v.data
   end in
   let yaml = read_file file in
-  let yaml_result = Yamlt.decode_string M.value_codec yaml in
+  let yaml_result = Yamlt.decode M.value_codec (Bytes.Reader.of_string yaml) in
 
   match yaml_result with
   | Ok v -> Printf.printf "YAML (with tags): %s\n" (M.show v)

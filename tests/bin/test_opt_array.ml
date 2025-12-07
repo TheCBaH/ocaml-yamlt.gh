@@ -1,3 +1,5 @@
+open Bytesrw
+
 let () =
   let codec =
     Jsont.Object.map ~kind:"Test" (fun arr -> arr)
@@ -9,7 +11,7 @@ let () =
   let yaml = "values: [a, b, c]" in
 
   Printf.printf "Testing optional array field:\n";
-  match Yamlt.decode_string codec yaml with
+  match Yamlt.decode codec (Bytes.Reader.of_string yaml) with
   | Ok arr -> (
       match arr with
       | None -> Printf.printf "Result: None\n"
