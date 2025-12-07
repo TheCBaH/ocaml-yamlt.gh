@@ -26,6 +26,7 @@ dependencies:
     - bzip2
     - gcc
     - ocaml
+    - pkg-config
 
 steps:
   - name: opam
