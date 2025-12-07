@@ -29,8 +29,9 @@
       let from_yaml = Yamlt.decode_string Config.jsont yaml_str
     ]}
 
-    See notes about {{!yaml_mapping}YAML to JSON mapping} and
-    {{!yaml_scalars}YAML scalar resolution}. *)
+    See notes about {{!yaml_mapping}YAML to JSON mapping},
+    {{!yaml_scalars}YAML scalar resolution}, and
+    {{!null_handling}null value handling}. *)
 
 open Bytesrw
 
@@ -198,3 +199,52 @@ val recode :
     When decoding against a specific {!Jsont.t} type, the expected type takes
     precedence over automatic resolution. For example, decoding ["yes"] against
     {!Jsont.string} yields the string ["yes"], not [true]. *)
+
+(** {1:null_handling Null Value Handling}
+
+    YAML null values are handled according to the expected type to provide
+    friendly defaults while maintaining type safety:
+
+    {b Collections (Arrays and Objects):}
+
+    Null values decode as empty collections when the codec expects a collection
+    type. This provides convenient defaults for optional collection fields in
+    YAML:
+    {[
+      # YAML with null collection fields
+      config:
+        items: null      # Decodes as []
+        settings: ~      # Decodes as {}
+        tags:            # Missing value = null, decodes as []
+    ]}
+
+    For arrays, null decodes to an empty array. For objects, null decodes to an
+    object with all fields set to their [dec_absent] defaults. If any required
+    field lacks a default, decoding fails with a missing member error.
+
+    This behavior makes yamlt more forgiving for schemas with many optional
+    collection fields, where writing [field:] (which parses as null) is natural
+    and semantically equivalent to [field: []].
+
+    {b Numbers:}
+
+    Null values decode to [Float.nan] when the codec expects a number.
+
+    {b Primitive Types (Int, Bool, String):}
+
+    Null values {e fail} when decoding into primitive scalar types ([int],
+    [bool], [string]). Null typically indicates genuinely missing or incorrect
+    data for these types, and silent conversion could clash with a manual
+    setting of the default value (e.g. 0 and [null] for an integer would be
+    indistinguishable).
+
+    To accept null for primitive fields, explicitly use {!Jsont.option}:
+    {[
+      (* Accepts null, decodes as None *)
+      Jsont.Object.mem "count" (Jsont.option Jsont.int) ~dec_absent:None
+
+      (* Rejects null, requires a number *)
+      Jsont.Object.mem "count" Jsont.int ~dec_absent:0
+    ]}
+
+*)

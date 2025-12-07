@@ -201,6 +201,30 @@ let rec decode_scalar_as : type a.
       else
         (* Strings accept quoted scalars or non-null plain scalars *)
         map.dec meta value
+  | Array map ->
+      (* Treat null as an empty array for convenience *)
+      if is_null_scalar value then
+        let end_meta = meta_of_span d ev.Event.span in
+        map.dec_finish end_meta 0 (map.dec_empty ())
+      else
+        err_type_mismatch d ev.span t ~fnd:"scalar"
+  | Object map ->
+      (* Treat null as an empty object for convenience *)
+      if is_null_scalar value then
+        (* Build a dict with all default values from absent members *)
+        let add_default _ (Mem_dec mem_map) dict =
+          match mem_map.dec_absent with
+          | Some v -> Dict.add mem_map.id v dict
+          | None ->
+              (* Required field without default - error *)
+              let exp = String_map.singleton mem_map.name (Mem_dec mem_map) in
+              missing_mems_error meta map ~exp ~fnd:[]
+        in
+        let dict = String_map.fold add_default map.mem_decs Dict.empty in
+        let dict = Dict.add object_meta_arg meta dict in
+        apply_dict map.dec dict
+      else
+        err_type_mismatch d ev.span t ~fnd:"scalar"
   | Map m ->
       (* Handle Map combinators (e.g., from Jsont.option) *)
       m.dec (decode_scalar_as d ev value style m.dom)

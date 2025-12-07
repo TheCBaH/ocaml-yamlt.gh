@@ -42,6 +42,11 @@
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
+ (name test_null_collections)
+ (public_name test_null_collections)
+ (libraries yamlt jsont jsont.bytesrw bytesrw))
+
+(executable
  (name test_opt_array)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
