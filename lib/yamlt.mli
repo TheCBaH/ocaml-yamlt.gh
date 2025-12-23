@@ -29,6 +29,13 @@
       let from_yaml = Yamlt.decode_string Config.jsont yaml_str
     ]}
 
+    {2 Related Libraries}
+
+    {ul
+    {- [Jsont] - JSON codec library whose type descriptions this library interprets}
+    {- [Yamlrw] - Pure OCaml YAML parser/emitter used for low-level YAML processing}
+    {- [Bytesrw] - Byte-level I/O abstraction for streaming encode/decode}}
+
     See notes about {{!yaml_mapping}YAML to JSON mapping},
     {{!yaml_scalars}YAML scalar resolution}, and
     {{!null_handling}null value handling}. *)
