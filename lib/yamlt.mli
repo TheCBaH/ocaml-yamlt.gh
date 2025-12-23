@@ -238,7 +238,7 @@ val recode :
     setting of the default value (e.g. 0 and [null] for an integer would be
     indistinguishable).
 
-    To accept null for primitive fields, explicitly use {!Jsont.option}:
+    To accept null for primitive fields, explicitly use {!val:Jsont.option}:
     {[
       (* Accepts null, decodes as None *)
       Jsont.Object.mem "count" (Jsont.option Jsont.int) ~dec_absent:None
