@@ -900,9 +900,21 @@ and encode_object : type o. encoder -> (o, o) object_map -> o -> unit =
         encode e mem.type' mem_v
       end)
     map.mem_encs;
-  (* Handle case objects *)
+  (* Handle unknown members (for as_string_map objects) *)
   (match map.shape with
-  | Object_basic _ -> ()
+  | Object_basic (Unknown_keep (mmap, enc_fn)) ->
+      let mems = enc_fn v in
+      let _acc : unit =
+        mmap.enc
+          (fun _meta name mem_v () ->
+            (* Emit key *)
+            emit e (scalar_event ~value:name ~style:`Plain ());
+            (* Emit value *)
+            encode e mmap.mems_type mem_v)
+          mems ()
+      in
+      ()
+  | Object_basic (Unknown_skip | Unknown_error) -> ()
   | Object_cases (_, cases) ->
       let (Case_value (case_map, case_v)) = cases.enc_case (cases.enc v) in
       (* Emit case tag *)

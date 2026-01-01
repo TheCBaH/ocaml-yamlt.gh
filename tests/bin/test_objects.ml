@@ -255,6 +255,52 @@ let test_encode_object () =
   | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
   | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e
 
+(* Test: Roundtrip encoding of objects with unknown members *)
+let test_unknown_keep_roundtrip file =
+  let module M = struct
+    type flexible = { name : string; extra : Jsont.json }
+
+    let flexible_codec =
+      Jsont.Object.map ~kind:"Flexible" (fun name extra -> { name; extra })
+      |> Jsont.Object.mem "name" Jsont.string ~enc:(fun f -> f.name)
+      |> Jsont.Object.keep_unknown Jsont.json_mems ~enc:(fun f -> f.extra)
+      |> Jsont.Object.finish
+
+    let show_json json =
+      match Jsont_bytesrw.encode_string Jsont.json json with
+      | Ok s -> String.trim s
+      | Error e -> Printf.sprintf "ERROR: %s" e
+  end in
+  let yaml = read_file file in
+
+  (* Decode from YAML *)
+  match Yamlt.decode M.flexible_codec (Bytes.Reader.of_string yaml) with
+  | Error e -> Printf.printf "Decode error: %s\n" e
+  | Ok v ->
+      Printf.printf "Decoded: name=%S, extra=%s\n" v.M.name (M.show_json v.M.extra);
+
+      (* Encode to YAML Block *)
+      let b = Buffer.create 256 in
+      let writer = Bytes.Writer.of_buffer b in
+      (match
+         Yamlt.encode ~format:Yamlt.Block M.flexible_codec v ~eod:true writer
+       with
+      | Ok () -> Printf.printf "Encoded Block:\n%s" (Buffer.contents b)
+      | Error e -> Printf.printf "Encode Block ERROR: %s\n" e);
+
+      (* Re-decode the encoded YAML to verify roundtrip *)
+      let encoded = Buffer.contents b in
+      (match
+         Yamlt.decode M.flexible_codec (Bytes.Reader.of_string encoded)
+       with
+      | Error e -> Printf.printf "Re-decode error: %s\n" e
+      | Ok v2 ->
+          Printf.printf "Re-decoded: name=%S, extra=%s\n" v2.M.name
+            (M.show_json v2.M.extra);
+          if M.show_json v.M.extra = M.show_json v2.M.extra then
+            Printf.printf "Roundtrip: OK (extra members preserved)\n"
+          else Printf.printf "Roundtrip: FAILED (extra members lost)\n")
+
 let () =
   let usage = "Usage: test_objects <command> [args...]" in
 
@@ -276,6 +322,8 @@ let () =
       test_unknown_members_error Sys.argv.(2)
   | "unknown-keep" when Stdlib.Array.length Sys.argv = 3 ->
       test_unknown_members_keep Sys.argv.(2)
+  | "unknown-keep-roundtrip" when Stdlib.Array.length Sys.argv = 3 ->
+      test_unknown_keep_roundtrip Sys.argv.(2)
   | "cases" when Stdlib.Array.length Sys.argv = 3 ->
       test_object_cases Sys.argv.(2)
   | "missing-required" when Stdlib.Array.length Sys.argv = 3 ->
@@ -290,6 +338,8 @@ let () =
       prerr_endline "  nested <file>           - Test nested objects";
       prerr_endline "  unknown-error <file>    - Test unknown member error";
       prerr_endline "  unknown-keep <file>     - Test keeping unknown members";
+      prerr_endline
+        "  unknown-keep-roundtrip <file> - Test roundtrip of unknown members";
       prerr_endline "  cases <file>            - Test object cases (unions)";
       prerr_endline
         "  missing-required <file> - Test missing required field error";

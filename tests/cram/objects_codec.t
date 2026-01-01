@@ -81,6 +81,17 @@ Unknown members can be kept
   JSON: flexible: {name="Charlie"; has_extra=true}
   YAML: flexible: {name="Charlie"; has_extra=true}
 
+Unknown members are preserved during encoding roundtrip
+
+  $ test_objects unknown-keep-roundtrip ../data/objects/unknown_keep.yml
+  Decoded: name="Charlie", extra={"extra1":"value1","extra2":"value2"}
+  Encoded Block:
+  name: Charlie
+  extra1: value1
+  extra2: value2
+  Re-decoded: name="Charlie", extra={"extra1":"value1","extra2":"value2"}
+  Roundtrip: OK (extra members preserved)
+
 ================================================================================
 OBJECT CASES (DISCRIMINATED UNIONS)
 ================================================================================
