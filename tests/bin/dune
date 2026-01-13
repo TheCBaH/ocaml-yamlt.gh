@@ -1,36 +1,29 @@
 (executable
  (name test_scalars)
- (public_name test_scalars)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_objects)
- (public_name test_objects)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_arrays)
- (public_name test_arrays)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_formats)
- (public_name test_formats)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_roundtrip)
- (public_name test_roundtrip)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_complex)
- (public_name test_complex)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_edge)
- (public_name test_edge)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
@@ -43,7 +36,6 @@
 
 (executable
  (name test_null_collections)
- (public_name test_null_collections)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
@@ -68,10 +60,8 @@
 
 (executable
  (name test_locations)
- (public_name test_locations)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
 
 (executable
  (name test_multidoc)
- (public_name test_multidoc)
  (libraries yamlt jsont jsont.bytesrw bytesrw))
