@@ -104,6 +104,30 @@ val decode_all' :
   ('a, Jsont.Error.t) result Seq.t
 (** [decode_all'] is like {!val-decode_all} but preserves the error structure. *)
 
+val decode_string :
+  ?layout:bool ->
+  ?locs:bool ->
+  ?file:Jsont.Textloc.fpath ->
+  ?max_depth:int ->
+  ?max_nodes:int ->
+  'a Jsont.t ->
+  string ->
+  ('a, string) result
+(** [decode_string t s] decodes a value from YAML string [s] according to
+    type [t]. This is a convenience wrapper around {!val-decode}. *)
+
+val decode_value : 'a Jsont.t -> Yamlrw.value -> ('a, string) result
+(** [decode_value t v] decodes a value from a pre-parsed {!Yamlrw.value}
+    according to type [t].
+
+    This is useful when you have already parsed YAML into its JSON-compatible
+    representation (e.g., when using {!Yamlrw.of_string}) and want to decode
+    it using a Jsont codec without re-parsing the YAML text. *)
+
+val decode_value' : 'a Jsont.t -> Yamlrw.value -> ('a, Jsont.Error.t) result
+(** [decode_value'] is like {!val-decode_value} but preserves the error
+    structure. *)
+
 (** {1:encode Encode} *)
 
 (** YAML output format. *)
