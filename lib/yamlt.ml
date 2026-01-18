@@ -779,6 +779,34 @@ let decode ?layout ?locs ?file ?max_depth ?max_nodes t reader =
   Result.map_error Jsont.Error.to_string
     (decode' ?layout ?locs ?file ?max_depth ?max_nodes t reader)
 
+let decode_string ?layout ?locs ?file ?max_depth ?max_nodes t s =
+  let reader = Bytesrw.Bytes.Reader.of_string s in
+  decode ?layout ?locs ?file ?max_depth ?max_nodes t reader
+
+(* Convert Yamlrw.value to Jsont.json for type-driven decoding *)
+let rec value_to_json (v : Yamlrw.value) : Jsont.json =
+  let meta = Jsont.Meta.none in
+  match v with
+  | `Null -> Jsont.Null ((), meta)
+  | `Bool b -> Jsont.Bool (b, meta)
+  | `Float f -> Jsont.Number (f, meta)
+  | `String s -> Jsont.String (s, meta)
+  | `A items -> Jsont.Array (List.map value_to_json items, meta)
+  | `O fields ->
+      let mems =
+        List.map
+          (fun (k, v) -> ((k, meta), value_to_json v))
+          fields
+      in
+      Jsont.Object (mems, meta)
+
+let decode_value' t v =
+  let json = value_to_json v in
+  Jsont.Json.decode' t json
+
+let decode_value t v =
+  Result.map_error Jsont.Error.to_string (decode_value' t v)
+
 (* Encoder *)
 
 type encoder = {
