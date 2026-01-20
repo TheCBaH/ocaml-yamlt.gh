@@ -37,10 +37,10 @@ let test_simple file =
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all M.person_codec reader in
   Printf.printf "Documents:\n";
-  seq |> Seq.iteri (fun i result ->
-    Printf.printf "  [%d] " i;
-    show_result "" (Result.map M.show result)
-  )
+  seq
+  |> Seq.iteri (fun i result ->
+      Printf.printf "  [%d] " i;
+      show_result "" (Result.map M.show result))
 
 (* Test: Count documents *)
 let test_count file =
@@ -67,11 +67,11 @@ let test_errors file =
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all M.person_codec reader in
   Printf.printf "Document results:\n";
-  seq |> Seq.iteri (fun i result ->
-    match result with
-    | Ok p -> Printf.printf "  [%d] OK: %s\n" i (M.show p)
-    | Error e -> Printf.printf "  [%d] ERROR: %s\n" i (String.trim e)
-  )
+  seq
+  |> Seq.iteri (fun i result ->
+      match result with
+      | Ok p -> Printf.printf "  [%d] OK: %s\n" i (M.show p)
+      | Error e -> Printf.printf "  [%d] ERROR: %s\n" i (String.trim e))
 
 (* Test: Location tracking with locs=true *)
 let test_locations file =
@@ -89,20 +89,22 @@ let test_locations file =
   Printf.printf "=== Without locs (default) ===\n";
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all ~locs:false M.person_codec reader in
-  seq |> Seq.iteri (fun i result ->
-    match result with
-    | Ok _ -> Printf.printf "  [%d] OK\n" i
-    | Error e -> Printf.printf "  [%d] ERROR:\n%s\n" i (String.trim e)
-  );
+  seq
+  |> Seq.iteri (fun i result ->
+      match result with
+      | Ok _ -> Printf.printf "  [%d] OK\n" i
+      | Error e -> Printf.printf "  [%d] ERROR:\n%s\n" i (String.trim e));
 
   Printf.printf "\n=== With locs=true ===\n";
   let reader = Bytes.Reader.of_string yaml in
-  let seq = Yamlt.decode_all ~locs:true ~file:"test.yml" M.person_codec reader in
-  seq |> Seq.iteri (fun i result ->
-    match result with
-    | Ok _ -> Printf.printf "  [%d] OK\n" i
-    | Error e -> Printf.printf "  [%d] ERROR:\n%s\n" i (String.trim e)
-  )
+  let seq =
+    Yamlt.decode_all ~locs:true ~file:"test.yml" M.person_codec reader
+  in
+  seq
+  |> Seq.iteri (fun i result ->
+      match result with
+      | Ok _ -> Printf.printf "  [%d] OK\n" i
+      | Error e -> Printf.printf "  [%d] ERROR:\n%s\n" i (String.trim e))
 
 (* Test: Roundtrip to JSON - decode YAML multidoc, encode each to JSON *)
 let test_json_roundtrip file =
@@ -110,14 +112,14 @@ let test_json_roundtrip file =
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all Jsont.json reader in
   Printf.printf "JSON outputs:\n";
-  seq |> Seq.iteri (fun i result ->
-    match result with
-    | Ok json_val ->
-        (match Jsont_bytesrw.encode_string Jsont.json json_val with
-         | Ok json_str -> Printf.printf "  [%d] %s\n" i (String.trim json_str)
-         | Error e -> Printf.printf "  [%d] ENCODE ERROR: %s\n" i e)
-    | Error e -> Printf.printf "  [%d] DECODE ERROR: %s\n" i (String.trim e)
-  )
+  seq
+  |> Seq.iteri (fun i result ->
+      match result with
+      | Ok json_val -> (
+          match Jsont_bytesrw.encode_string Jsont.json json_val with
+          | Ok json_str -> Printf.printf "  [%d] %s\n" i (String.trim json_str)
+          | Error e -> Printf.printf "  [%d] ENCODE ERROR: %s\n" i e)
+      | Error e -> Printf.printf "  [%d] DECODE ERROR: %s\n" i (String.trim e))
 
 (* Test: Nested objects in multidoc *)
 let test_nested file =
@@ -147,10 +149,10 @@ let test_nested file =
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all M.person_codec reader in
   Printf.printf "Nested documents:\n";
-  seq |> Seq.iteri (fun i result ->
-    Printf.printf "  [%d] " i;
-    show_result "" (Result.map M.show result)
-  )
+  seq
+  |> Seq.iteri (fun i result ->
+      Printf.printf "  [%d] " i;
+      show_result "" (Result.map M.show result))
 
 (* Test: Arrays in multidoc *)
 let test_arrays file =
@@ -158,14 +160,14 @@ let test_arrays file =
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all Jsont.json reader in
   Printf.printf "Array documents:\n";
-  seq |> Seq.iteri (fun i result ->
-    match result with
-    | Ok json_val ->
-        (match Jsont_bytesrw.encode_string Jsont.json json_val with
-         | Ok json_str -> Printf.printf "  [%d] %s\n" i (String.trim json_str)
-         | Error e -> Printf.printf "  [%d] ERROR: %s\n" i e)
-    | Error e -> Printf.printf "  [%d] ERROR: %s\n" i (String.trim e)
-  )
+  seq
+  |> Seq.iteri (fun i result ->
+      match result with
+      | Ok json_val -> (
+          match Jsont_bytesrw.encode_string Jsont.json json_val with
+          | Ok json_str -> Printf.printf "  [%d] %s\n" i (String.trim json_str)
+          | Error e -> Printf.printf "  [%d] ERROR: %s\n" i e)
+      | Error e -> Printf.printf "  [%d] ERROR: %s\n" i (String.trim e))
 
 (* Test: Scalars in multidoc *)
 let test_scalars file =
@@ -173,14 +175,14 @@ let test_scalars file =
   let reader = Bytes.Reader.of_string yaml in
   let seq = Yamlt.decode_all Jsont.json reader in
   Printf.printf "Scalar documents:\n";
-  seq |> Seq.iteri (fun i result ->
-    match result with
-    | Ok json_val ->
-        (match Jsont_bytesrw.encode_string Jsont.json json_val with
-         | Ok json_str -> Printf.printf "  [%d] %s\n" i (String.trim json_str)
-         | Error e -> Printf.printf "  [%d] ERROR: %s\n" i e)
-    | Error e -> Printf.printf "  [%d] ERROR: %s\n" i (String.trim e)
-  )
+  seq
+  |> Seq.iteri (fun i result ->
+      match result with
+      | Ok json_val -> (
+          match Jsont_bytesrw.encode_string Jsont.json json_val with
+          | Ok json_str -> Printf.printf "  [%d] %s\n" i (String.trim json_str)
+          | Error e -> Printf.printf "  [%d] ERROR: %s\n" i e)
+      | Error e -> Printf.printf "  [%d] ERROR: %s\n" i (String.trim e))
 
 (* Test: Summary stats - count successes vs failures *)
 let test_summary file =
@@ -198,11 +200,9 @@ let test_summary file =
   let seq = Yamlt.decode_all M.person_codec reader in
   let success = ref 0 in
   let failure = ref 0 in
-  seq |> Seq.iter (fun result ->
-    match result with
-    | Ok _ -> incr success
-    | Error _ -> incr failure
-  );
+  seq
+  |> Seq.iter (fun result ->
+      match result with Ok _ -> incr success | Error _ -> incr failure);
   Printf.printf "Summary: %d documents (%d ok, %d error)\n"
     (!success + !failure) !success !failure
 
@@ -231,7 +231,8 @@ let () =
       prerr_endline "  simple <file>     - Decode person documents";
       prerr_endline "  count <file>      - Count documents";
       prerr_endline "  errors <file>     - Show success/error for each document";
-      prerr_endline "  locations <file>  - Test location tracking with locs=true";
+      prerr_endline
+        "  locations <file>  - Test location tracking with locs=true";
       prerr_endline "  json <file>       - Roundtrip to JSON";
       prerr_endline "  nested <file>     - Decode nested objects";
       prerr_endline "  arrays <file>     - Decode arrays";

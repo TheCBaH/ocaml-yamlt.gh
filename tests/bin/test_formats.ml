@@ -95,7 +95,9 @@ let test_number_formats file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
-  let yaml_result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "number_formats"
     (Result.map M.show json_result)
@@ -133,7 +135,9 @@ let test_encode_styles () =
   (* Encode to YAML Block style *)
   (let b = Buffer.create 256 in
    let writer = Bytes.Writer.of_buffer b in
-   match Yamlt.encode ~format:Yamlt.Block M.data_codec data ~eod:true writer with
+   match
+     Yamlt.encode ~format:Yamlt.Block M.data_codec data ~eod:true writer
+   with
    | Ok () -> Printf.printf "YAML Block:\n%s\n" (Buffer.contents b)
    | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
 
@@ -186,7 +190,9 @@ let test_empty_document file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.wrapper_codec json in
-  let yaml_result = Yamlt.decode M.wrapper_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.wrapper_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "empty_document"
     (Result.map M.show json_result)

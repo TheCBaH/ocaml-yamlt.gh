@@ -105,7 +105,9 @@ let test_default_values file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.settings_codec json in
-  let yaml_result = Yamlt.decode M.settings_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.settings_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "settings"
     (Result.map M.show json_result)
@@ -138,7 +140,9 @@ let test_nested_objects file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.employee_codec json in
-  let yaml_result = Yamlt.decode M.employee_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.employee_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "employee"
     (Result.map M.show json_result)
@@ -176,7 +180,9 @@ let test_unknown_members_keep file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.flexible_codec json in
-  let yaml_result = Yamlt.decode M.flexible_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.flexible_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "flexible"
     (Result.map M.show json_result)
@@ -244,14 +250,18 @@ let test_encode_object () =
   (* Encode to YAML Block *)
   (let b = Buffer.create 256 in
    let writer = Bytes.Writer.of_buffer b in
-   match Yamlt.encode ~format:Yamlt.Block M.person_codec person ~eod:true writer with
+   match
+     Yamlt.encode ~format:Yamlt.Block M.person_codec person ~eod:true writer
+   with
    | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
    | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
 
   (* Encode to YAML Flow *)
   let b = Buffer.create 256 in
   let writer = Bytes.Writer.of_buffer b in
-  match Yamlt.encode ~format:Yamlt.Flow M.person_codec person ~eod:true writer with
+  match
+    Yamlt.encode ~format:Yamlt.Flow M.person_codec person ~eod:true writer
+  with
   | Ok () -> Printf.printf "YAML Flow: %s" (Buffer.contents b)
   | Error e -> Printf.printf "YAML Flow ERROR: %s\n" e
 
@@ -276,8 +286,9 @@ let test_unknown_keep_roundtrip file =
   (* Decode from YAML *)
   match Yamlt.decode M.flexible_codec (Bytes.Reader.of_string yaml) with
   | Error e -> Printf.printf "Decode error: %s\n" e
-  | Ok v ->
-      Printf.printf "Decoded: name=%S, extra=%s\n" v.M.name (M.show_json v.M.extra);
+  | Ok v -> (
+      Printf.printf "Decoded: name=%S, extra=%s\n" v.M.name
+        (M.show_json v.M.extra);
 
       (* Encode to YAML Block *)
       let b = Buffer.create 256 in
@@ -290,9 +301,7 @@ let test_unknown_keep_roundtrip file =
 
       (* Re-decode the encoded YAML to verify roundtrip *)
       let encoded = Buffer.contents b in
-      (match
-         Yamlt.decode M.flexible_codec (Bytes.Reader.of_string encoded)
-       with
+      match Yamlt.decode M.flexible_codec (Bytes.Reader.of_string encoded) with
       | Error e -> Printf.printf "Re-decode error: %s\n" e
       | Ok v2 ->
           Printf.printf "Re-decoded: name=%S, extra=%s\n" v2.M.name

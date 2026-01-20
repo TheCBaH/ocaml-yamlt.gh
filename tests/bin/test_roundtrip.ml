@@ -40,13 +40,15 @@ let test_scalar_roundtrip () =
   let yaml_block_encoded =
     let b = Buffer.create 256 in
     let writer = Bytes.Writer.of_buffer b in
-    match Yamlt.encode ~format:Yamlt.Block M.data_codec original ~eod:true writer with
+    match
+      Yamlt.encode ~format:Yamlt.Block M.data_codec original ~eod:true writer
+    with
     | Ok () -> Ok (Buffer.contents b)
     | Error e -> Error e
   in
   let yaml_block_decoded =
     Result.bind yaml_block_encoded (fun yaml ->
-      Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml))
+        Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml))
   in
   (match yaml_block_decoded with
   | Ok decoded when M.equal original decoded ->
@@ -58,13 +60,15 @@ let test_scalar_roundtrip () =
   let yaml_flow_encoded =
     let b = Buffer.create 256 in
     let writer = Bytes.Writer.of_buffer b in
-    match Yamlt.encode ~format:Yamlt.Flow M.data_codec original ~eod:true writer with
+    match
+      Yamlt.encode ~format:Yamlt.Flow M.data_codec original ~eod:true writer
+    with
     | Ok () -> Ok (Buffer.contents b)
     | Error e -> Error e
   in
   let yaml_flow_decoded =
     Result.bind yaml_flow_encoded (fun yaml ->
-      Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml))
+        Yamlt.decode M.data_codec (Bytes.Reader.of_string yaml))
   in
   match yaml_flow_decoded with
   | Ok decoded when M.equal original decoded ->

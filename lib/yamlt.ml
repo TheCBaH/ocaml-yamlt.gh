@@ -71,7 +71,8 @@ let meta_of_span d span =
        The last_byte is on the previous line, so we need to calculate
        the line start position based on last_byte, not stop. *)
     let last_line =
-      if stop.Position.column = 1 && stop.Position.line > start.Position.line then
+      if stop.Position.column = 1 && stop.Position.line > start.Position.line
+      then
         (* last_byte is on the previous line (stop.line - 1)
            We need to estimate where that line starts. Since we don't have
            the full text, we can't calculate it exactly, but we can use:
@@ -91,8 +92,7 @@ let meta_of_span d span =
              last_byte should be the newline character on the previous line.
              The line likely started much earlier, but we'll estimate conservatively. *)
           (last_line_num, last_byte)
-      else
-        (stop.Position.line, stop.Position.index - stop.Position.column + 1)
+      else (stop.Position.line, stop.Position.index - stop.Position.column + 1)
     in
     let textloc =
       Jsont.Textloc.make ~file:d.file ~first_byte ~last_byte ~first_line
@@ -206,8 +206,7 @@ let rec decode_scalar_as : type a.
       if is_null_scalar value then
         let end_meta = meta_of_span d ev.Event.span in
         map.dec_finish end_meta 0 (map.dec_empty ())
-      else
-        err_type_mismatch d ev.span t ~fnd:"scalar"
+      else err_type_mismatch d ev.span t ~fnd:"scalar"
   | Object map ->
       (* Treat null as an empty object for convenience *)
       if is_null_scalar value then
@@ -223,8 +222,7 @@ let rec decode_scalar_as : type a.
         let dict = String_map.fold add_default map.mem_decs Dict.empty in
         let dict = Dict.add object_meta_arg meta dict in
         apply_dict map.dec dict
-      else
-        err_type_mismatch d ev.span t ~fnd:"scalar"
+      else err_type_mismatch d ev.span t ~fnd:"scalar"
   | Map m ->
       (* Handle Map combinators (e.g., from Jsont.option) *)
       m.dec (decode_scalar_as d ev value style m.dom)
@@ -347,12 +345,12 @@ and decode_alias : type a. decoder -> Event.spanned -> string -> a t -> a =
   | None ->
       let meta = meta_of_span d ev.span in
       err_msg meta "Unknown anchor: %s" anchor
-  | Some json_value ->
+  | Some json_value -> (
       (* Decode the stored JSON value through the type *)
       let t' = Jsont.Repr.unsafe_to_t t in
       match Jsont.Json.decode' t' json_value with
       | Ok v -> v
-      | Error e -> raise (Jsont.Error e)
+      | Error e -> raise (Jsont.Error e))
 
 and decode_array : type a elt b.
     decoder -> nest:int -> Event.spanned -> (a, elt, b) array_map -> a =
@@ -576,12 +574,10 @@ and decode_object_cases : type o cases tag.
                 e)
         | None ->
             (* Unknown member - decode as generic JSON and delay *)
-            let v =
-              decode d ~nest:(nest + 1) (Jsont.Repr.of_t Jsont.json)
-            in
+            let v = decode d ~nest:(nest + 1) (Jsont.Repr.of_t Jsont.json) in
             let delayed = ((name, name_meta), v) :: delayed in
-            decode_object_cases d ~nest obj_meta object_map umems cases
-              mem_miss delayed dict
+            decode_object_cases d ~nest obj_meta object_map umems cases mem_miss
+              delayed dict
       end
   | None -> err_msg obj_meta "Unclosed mapping"
 
@@ -793,11 +789,7 @@ let rec value_to_json (v : Yamlrw.value) : Jsont.json =
   | `String s -> Jsont.String (s, meta)
   | `A items -> Jsont.Array (List.map value_to_json items, meta)
   | `O fields ->
-      let mems =
-        List.map
-          (fun (k, v) -> ((k, meta), value_to_json v))
-          fields
-      in
+      let mems = List.map (fun (k, v) -> ((k, meta), value_to_json v)) fields in
       Jsont.Object (mems, meta)
 
 let decode_value' t v =
@@ -836,14 +828,7 @@ let choose_scalar_style ~preferred s =
 (* Helper to create scalar events with common defaults *)
 let scalar_event ?(anchor = None) ?(tag = None) ~value ~style () =
   Event.Scalar
-    {
-      anchor;
-      tag;
-      value;
-      plain_implicit = true;
-      quoted_implicit = true;
-      style;
-    }
+    { anchor; tag; value; plain_implicit = true; quoted_implicit = true; style }
 
 (* Helper to emit events *)
 let emit e = Emitter.emit e.emitter
@@ -916,7 +901,8 @@ and encode_array : type a elt b. encoder -> (a, elt, b) array_map -> a -> unit =
 and encode_object : type o. encoder -> (o, o) object_map -> o -> unit =
  fun e map v ->
   let style = layout_style_of_format e.format in
-  emit e (Event.Mapping_start { anchor = None; tag = None; implicit = true; style });
+  emit e
+    (Event.Mapping_start { anchor = None; tag = None; implicit = true; style });
   (* Encode each member *)
   List.iter
     (fun (Mem_enc mem) ->
@@ -975,7 +961,8 @@ let encode' ?buf:_ ?format ?indent ?explicit_doc ?scalar_style t v ~eod writer =
   let e = make_encoder ?format ?indent ?explicit_doc ?scalar_style emitter in
   try
     emit e (Event.Stream_start { encoding = `Utf8 });
-    emit e (Event.Document_start { version = None; implicit = not e.explicit_doc });
+    emit e
+      (Event.Document_start { version = None; implicit = not e.explicit_doc });
     let t' = Jsont.Repr.of_t t in
     encode e t' v;
     emit e (Event.Document_end { implicit = not e.explicit_doc });

@@ -33,7 +33,9 @@ let () =
   | Ok "" -> Printf.printf "✓ Quoted empty string: \"\"\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
-  (match Yamlt.decode string_codec (Bytes.Reader.of_string "value: \"null\"") with
+  (match
+     Yamlt.decode string_codec (Bytes.Reader.of_string "value: \"null\"")
+   with
   | Ok "null" -> Printf.printf "✓ Quoted 'null': \"null\"\n"
   | _ -> Printf.printf "✗ FAIL\n");
 
@@ -66,7 +68,9 @@ let () =
     |> Jsont.Object.finish
   in
 
-  (match Yamlt.decode opt_array_codec (Bytes.Reader.of_string "values: [a, b, c]") with
+  (match
+     Yamlt.decode opt_array_codec (Bytes.Reader.of_string "values: [a, b, c]")
+   with
   | Ok (Some arr) when Array.length arr = 3 ->
       Printf.printf "✓ Optional array [a, b, c]: Some([3 items])\n"
   | _ -> Printf.printf "✗ FAIL\n");
@@ -87,10 +91,13 @@ let () =
   let b = Buffer.create 256 in
   let writer = Bytes.Writer.of_buffer b in
   match
-    Yamlt.encode ~format:Flow encode_codec ("test", [| 1.; 2.; 3. |]) ~eod:true writer
+    Yamlt.encode ~format:Flow encode_codec
+      ("test", [| 1.; 2.; 3. |])
+      ~eod:true writer
   with
   | Ok ()
-    when String.equal (Buffer.contents b) "{name: test, values: [1.0, 2.0, 3.0]}\n" ->
+    when String.equal (Buffer.contents b)
+           "{name: test, values: [1.0, 2.0, 3.0]}\n" ->
       Printf.printf "✓ Flow encoding with comma separator\n"
   | Ok () -> Printf.printf "✗ FAIL: %S\n" (Buffer.contents b)
   | Error e -> Printf.printf "✗ ERROR: %s\n" e

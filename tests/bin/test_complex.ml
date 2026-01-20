@@ -98,7 +98,9 @@ let test_mixed_structure file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.collection_codec json in
-  let yaml_result = Yamlt.decode M.collection_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.collection_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "mixed_structure"
     (Result.map M.show json_result)
