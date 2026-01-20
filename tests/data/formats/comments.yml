@@ -1,5 +1,0 @@
-# Configuration file with comments
-host: localhost  # The server host
-port: 8080       # The server port
-# Enable debug mode for development
-debug: true
