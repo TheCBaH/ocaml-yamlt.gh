@@ -11,7 +11,9 @@ let () =
   let b = Buffer.create 256 in
   let writer = Bytes.Writer.of_buffer b in
   match
-    Yamlt.encode ~format:Flow encode_codec ("test", [| 1.; 2.; 3. |]) ~eod:true writer
+    Yamlt.encode ~format:Flow encode_codec
+      ("test", [| 1.; 2.; 3. |])
+      ~eod:true writer
   with
   | Ok () ->
       let yaml_flow = Buffer.contents b in

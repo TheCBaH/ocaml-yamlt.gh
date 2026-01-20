@@ -52,7 +52,9 @@ let test_large_numbers file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
-  let yaml_result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "large_numbers"
     (Result.map M.show json_result)

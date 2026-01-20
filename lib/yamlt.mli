@@ -31,10 +31,11 @@
 
     {2 Related Libraries}
 
-    {ul
-    {- [Jsont] - JSON codec library whose type descriptions this library interprets}
-    {- [Yamlrw] - Pure OCaml YAML parser/emitter used for low-level YAML processing}
-    {- [Bytesrw] - Byte-level I/O abstraction for streaming encode/decode}}
+    - [Jsont] - JSON codec library whose type descriptions this library
+      interprets
+    - [Yamlrw] - Pure OCaml YAML parser/emitter used for low-level YAML
+      processing
+    - [Bytesrw] - Byte-level I/O abstraction for streaming encode/decode
 
     See notes about {{!yaml_mapping}YAML to JSON mapping},
     {{!yaml_scalars}YAML scalar resolution}, and
@@ -102,7 +103,8 @@ val decode_all' :
   'a Jsont.t ->
   Bytes.Reader.t ->
   ('a, Jsont.Error.t) result Seq.t
-(** [decode_all'] is like {!val-decode_all} but preserves the error structure. *)
+(** [decode_all'] is like {!val-decode_all} but preserves the error structure.
+*)
 
 val decode_string :
   ?layout:bool ->
@@ -113,16 +115,16 @@ val decode_string :
   'a Jsont.t ->
   string ->
   ('a, string) result
-(** [decode_string t s] decodes a value from YAML string [s] according to
-    type [t]. This is a convenience wrapper around {!val-decode}. *)
+(** [decode_string t s] decodes a value from YAML string [s] according to type
+    [t]. This is a convenience wrapper around {!val-decode}. *)
 
 val decode_value : 'a Jsont.t -> Yamlrw.value -> ('a, string) result
 (** [decode_value t v] decodes a value from a pre-parsed {!Yamlrw.value}
     according to type [t].
 
     This is useful when you have already parsed YAML into its JSON-compatible
-    representation (e.g., when using {!Yamlrw.of_string}) and want to decode
-    it using a Jsont codec without re-parsing the YAML text. *)
+    representation (e.g., when using {!Yamlrw.of_string}) and want to decode it
+    using a Jsont codec without re-parsing the YAML text. *)
 
 val decode_value' : 'a Jsont.t -> Yamlrw.value -> ('a, Jsont.Error.t) result
 (** [decode_value'] is like {!val-decode_value} but preserves the error
@@ -273,9 +275,6 @@ val recode :
     {[
       (* Accepts null, decodes as None *)
       Jsont.Object.mem "count" (Jsont.option Jsont.int) ~dec_absent:None
-
-      (* Rejects null, requires a number *)
-      Jsont.Object.mem "count" Jsont.int ~dec_absent:0
-    ]}
-
-*)
+        (* Rejects null, requires a number *)
+        Jsont.Object.mem "count" Jsont.int ~dec_absent:0
+    ]} *)

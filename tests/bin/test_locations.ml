@@ -33,11 +33,15 @@ let test_error_precision file =
   in
 
   Printf.printf "=== Without locs (default) ===\n";
-  let result_no_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false in
+  let result_no_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false
+  in
   show_result "Error message" result_no_locs;
 
   Printf.printf "\n=== With locs=true ===\n";
-  let result_with_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true in
+  let result_with_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true
+  in
   show_result "Error message" result_with_locs
 
 (* Test: Show error locations for nested structures *)
@@ -62,11 +66,15 @@ let test_nested_error file =
   in
 
   Printf.printf "=== Without locs (default) ===\n";
-  let result_no_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false in
+  let result_no_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false
+  in
   show_result "Nested error" result_no_locs;
 
   Printf.printf "\n=== With locs=true ===\n";
-  let result_with_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true in
+  let result_with_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true
+  in
   show_result "Nested error" result_with_locs
 
 (* Test: Array element error locations *)
@@ -81,11 +89,15 @@ let test_array_error file =
   in
 
   Printf.printf "=== Without locs (default) ===\n";
-  let result_no_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false in
+  let result_no_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false
+  in
   show_result "Array error" result_no_locs;
 
   Printf.printf "\n=== With locs=true ===\n";
-  let result_with_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true in
+  let result_with_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true
+  in
   show_result "Array error" result_with_locs
 
 (* Test: Layout preservation - check if we can decode with layout info *)
@@ -164,7 +176,9 @@ let test_file_path () =
   show_result "Error" result1;
 
   Printf.printf "\n=== With file path ===\n";
-  let result2 = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true ~file:"test.yml" in
+  let result2 =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true ~file:"test.yml"
+  in
   show_result "Error" result2
 
 (* Test: Missing field error with locs *)
@@ -180,11 +194,15 @@ let test_missing_field file =
   in
 
   Printf.printf "=== Without locs ===\n";
-  let result_no_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false in
+  let result_no_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false
+  in
   show_result "Missing field" result_no_locs;
 
   Printf.printf "\n=== With locs=true ===\n";
-  let result_with_locs = Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true in
+  let result_with_locs =
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true
+  in
   show_result "Missing field" result_with_locs
 
 (* Test: Both locs and layout together *)
@@ -200,27 +218,35 @@ let test_combined_options file =
   in
 
   Printf.printf "=== locs=false, layout=false (defaults) ===\n";
-  (match Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false ~layout:false with
+  (match
+     Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false ~layout:false
+   with
   | Ok (timeout, retries) ->
       Printf.printf "OK: timeout=%d, retries=%d\n" timeout retries
   | Error e -> Printf.printf "Error: %s\n" e);
 
   Printf.printf "\n=== locs=true, layout=false ===\n";
-  (match Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true ~layout:false with
+  (match
+     Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true ~layout:false
+   with
   | Ok (timeout, retries) ->
       Printf.printf "OK: timeout=%d, retries=%d (with precise locations)\n"
         timeout retries
   | Error e -> Printf.printf "Error: %s\n" e);
 
   Printf.printf "\n=== locs=false, layout=true ===\n";
-  (match Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false ~layout:true with
+  (match
+     Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:false ~layout:true
+   with
   | Ok (timeout, retries) ->
       Printf.printf "OK: timeout=%d, retries=%d (with layout metadata)\n"
         timeout retries
   | Error e -> Printf.printf "Error: %s\n" e);
 
   Printf.printf "\n=== locs=true, layout=true (both enabled) ===\n";
-  match Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true ~layout:true with
+  match
+    Yamlt.decode codec (Bytes.Reader.of_string yaml) ~locs:true ~layout:true
+  with
   | Ok (timeout, retries) ->
       Printf.printf "OK: timeout=%d, retries=%d (with locations and layout)\n"
         timeout retries

@@ -44,7 +44,9 @@ let test_int_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.numbers_codec json in
-  let yaml_result = Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.numbers_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "int_array"
     (Result.map M.show json_result)
@@ -94,7 +96,9 @@ let test_float_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.measurements_codec json in
-  let yaml_result = Yamlt.decode M.measurements_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.measurements_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "float_array"
     (Result.map M.show json_result)
@@ -246,7 +250,9 @@ let test_nullable_array file =
   let yaml = read_file file in
   let json = read_file (file ^ ".json") in
   let json_result = Jsont_bytesrw.decode_string M.nullable_codec json in
-  let yaml_result = Yamlt.decode M.nullable_codec (Bytes.Reader.of_string yaml) in
+  let yaml_result =
+    Yamlt.decode M.nullable_codec (Bytes.Reader.of_string yaml)
+  in
 
   show_result_both "nullable_array"
     (Result.map M.show json_result)
@@ -278,7 +284,9 @@ let test_encode_arrays () =
   (* Encode to YAML Block *)
   (let b = Buffer.create 256 in
    let writer = Bytes.Writer.of_buffer b in
-   match Yamlt.encode ~format:Yamlt.Block M.data_codec data ~eod:true writer with
+   match
+     Yamlt.encode ~format:Yamlt.Block M.data_codec data ~eod:true writer
+   with
    | Ok () -> Printf.printf "YAML Block:\n%s" (Buffer.contents b)
    | Error e -> Printf.printf "YAML Block ERROR: %s\n" e);
 

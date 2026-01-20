@@ -84,6 +84,6 @@ let () =
   in
   match Yamlt.decode codec3 (Bytes.Reader.of_string yaml8) with
   | Ok (name, items, tags) ->
-      Printf.printf "Result: {name=%s; items_count=%d; tags_count=%d}\n"
-        name (List.length items) (List.length tags)
+      Printf.printf "Result: {name=%s; items_count=%d; tags_count=%d}\n" name
+        (List.length items) (List.length tags)
   | Error e -> Printf.printf "Error: %s\n" e
