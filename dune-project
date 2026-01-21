@@ -6,9 +6,9 @@
 
 (license ISC)
 (authors "Anil Madhavapeddy")
-(homepage "https://tangled.org/@anil.recoil.org/ocaml-yamlt")
+(homepage "https://tangled.org/anil.recoil.org/ocaml-yamlt")
 (maintainers "Anil Madhavapeddy <anil@recoil.org>")
-(bug_reports "https://tangled.org/@anil.recoil.org/ocaml-yamlt/issues")
+(bug_reports "https://tangled.org/anil.recoil.org/ocaml-yamlt/issues")
 (maintenance_intent "(latest)")
 
 (package
