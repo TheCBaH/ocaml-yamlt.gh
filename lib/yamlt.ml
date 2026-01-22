@@ -437,6 +437,13 @@ and decode_object_members : type o.
       let umems = Unknown_mems umems_opt in
       decode_object_cases d ~nest obj_meta map umems cases mem_miss [] dict
 
+and init_unknown_builder : type o mems builder.
+    (o, mems, builder) unknown_mems -> builder =
+  function
+  | Unknown_skip -> ()
+  | Unknown_error -> ()
+  | Unknown_keep (mmap, _) -> mmap.dec_empty ()
+
 and decode_object_basic : type o mems builder.
     decoder ->
     nest:int ->
@@ -447,12 +454,7 @@ and decode_object_basic : type o mems builder.
     Dict.t ->
     Dict.t =
  fun d ~nest obj_meta object_map umems mem_miss dict ->
-  let ubuilder =
-    ref
-      (match umems with
-      | Unknown_skip | Unknown_error -> Obj.magic ()
-      | Unknown_keep (mmap, _) -> mmap.dec_empty ())
-  in
+  let ubuilder = ref (init_unknown_builder umems) in
   let mem_miss = ref mem_miss in
   let dict = ref dict in
   let rec loop () =
