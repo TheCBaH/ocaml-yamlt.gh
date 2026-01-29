@@ -303,8 +303,11 @@ and decode_any_scalar : type a.
   check_nodes d;
   let meta = meta_of_span d ev.span in
   let type_err fnd = Jsont.Repr.type_error meta t ~fnd in
-  (* Determine which decoder to use based on scalar content *)
-  if is_null_scalar value then
+  (* Determine which decoder to use based on scalar content.
+     IMPORTANT: Quoted scalars that look like null (e.g., "" or "null")
+     should be treated as strings, not null. Only plain scalars
+     should be resolved as null. *)
+  if style = `Plain && is_null_scalar value then
     match map.dec_null with
     | Some t' -> decode_scalar_as d ev value style t'
     | None -> type_err Jsont.Sort.Null
