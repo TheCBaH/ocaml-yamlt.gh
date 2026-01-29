@@ -9,7 +9,7 @@ license: "ISC"
 homepage: "https://tangled.org/anil.recoil.org/ocaml-yamlt"
 bug-reports: "https://tangled.org/anil.recoil.org/ocaml-yamlt/issues"
 depends: [
-  "dune" {>= "3.18"}
+  "dune" {>= "3.21"}
   "ocaml" {>= "4.14.0"}
   "yamlrw"
   "jsont"
@@ -30,4 +30,5 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+dev-repo: "git+https://tangled.org/anil.recoil.org/ocaml-yamlt"
 x-maintenance-intent: ["(latest)"]
