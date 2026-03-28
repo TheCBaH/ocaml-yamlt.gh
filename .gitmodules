@@ -1,0 +1,4 @@
+[submodule "ocaml-yamlt.anil"]
+	path = ocaml-yamlt.anil
+	url = https://github.com/TheCBaH/ocaml-yamlt.anil
+	branch = devel

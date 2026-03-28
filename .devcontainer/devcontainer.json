@@ -1,0 +1,33 @@
+{
+    "name": "ocaml-yamlt",
+    "build":  {
+        "dockerfile": "Dockerfile"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": "true",
+            "username": "vscode",
+            "userUid": "1000",
+            "userGid": "1000",
+            "upgradePackages": "false"
+        },
+        "./features/ocaml": {
+            "version": "5.4.0",
+            "packages": "alcotest jsont bytesrw",
+            "pin-packages": "yamlrw https://tangled.org/anil.recoil.org/ocaml-yamlrw.git#main"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ocamllabs.ocaml-platform"
+            ]
+        }
+    },
+    "remoteUser": "vscode",
+    "postCreateCommand": {
+        "opam": "sudo sh -ceux \"chown -R $(id -u):$(id -g) ${OPAMROOT}/log\"",
+        "submodules": "git submodule update --init --recursive --depth 1"
+    },
+    "waitFor": "postCreateCommand"
+}
